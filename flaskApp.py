@@ -275,14 +275,19 @@ def mvOverview():
     MVZones = []
     animation_option = {"startup": True, "duration": 1000, "easing": 'out'}
 
-    #TODO: change theSERIAL for the actual serial number of the camera for which we are retrieving data which
-    #should be provided bye the form when user clicks on a specific Zone bar within a specific Cameras chart
-
-    theSERIAL='Q2EV-2QFS-YRYE'
 
     if request.method == 'POST':
         # This is for the historical detail
-        data = getMVHistory(theSERIAL,'0')
+        zoneDetails = request.form['zone_details']
+        print("zoneDetails=",zoneDetails)
+        #zoneDetailsTuple contains: [camera serial, camera name, zone id, zone name]
+        zoneDetailsTuple=zoneDetails.split(',')
+        theSERIAL=zoneDetailsTuple[0]
+        theCameraNAME=zoneDetailsTuple[1]
+        theZoneID=zoneDetailsTuple[2]
+        theZoneNAME=zoneDetailsTuple[3]
+
+        data = getMVHistory(theSERIAL,theZoneID)
         if data != 'link error':
 
 
@@ -292,7 +297,7 @@ def mvOverview():
             # add a chart
 
             # now create the chart object using the serial as the name and the name of the device as the title
-            mv_history_chart = ColumnChart("mvhistorychart", options={"title": "History Details",
+            mv_history_chart = ColumnChart("mvhistorychart", options={"title": "Camera: "+theCameraNAME+" Zone: "+theZoneNAME,
                                                                                  "width": 1000,
                                                                                  "height": 500,
                                                                                  "hAxis.title": "Hour",
@@ -374,7 +379,13 @@ def mvOverview():
 
             AllDevices=json.loads(devices_data)
 
+            #theDeviceCharts is just a list (array) of the names of the charts constructed with the
+            #google charts flask library. They are to be iterated through to place on the History/details page
             theDeviceCharts=[]
+            #theDeviceDetails is a list of the details of each camera device. Each entry has a serial number, label and
+            #a list of zones for which there is zoneID and label
+            theDeviceDetails=[]
+
             theChartNum=0
 
             for theDevice in AllDevices:
@@ -388,11 +399,21 @@ def mvOverview():
                     continue
 
                 print("getMVOverview returned:" , data)
-
                 MVZones=json.loads(data)
+
+                zonesdetaildata=getMVZones(theDevice["serial"])
+                if zonesdetaildata == 'link error':
+                    continue
+
+                print("getMVZones returned:" , zonesdetaildata)
+                MVZonesDetails=json.loads(zonesdetaildata)
+
                 # add a chart
                 #first add the name of the chart to the list of charts to be displayed in the page
                 theDeviceCharts.append("chart"+str(theChartNum))
+
+                #now append the top level details of the camera for this chart to theDeviceDetails
+                theDeviceDetails.append([theDevice["serial"],theDevice["name"],[]])
 
                 #now create the chart object using the serial as the name and the name of the device as the title
                 mv_overview_chart = ColumnChart("chart"+str(theChartNum), options={"title": theDevice["name"],
@@ -406,18 +427,28 @@ def mvOverview():
                 the_rows = []
                 for j in range(len(MVZones)):
                     thisZone=MVZones[j]
-                    the_rows.append([ "Zone "+str(thisZone["zoneId"]), thisZone["entrances"] ])
+                    #assuming same number of zone entries overviews than number of zones here
+                    thisZoneDetails=MVZonesDetails[j]
+                    the_rows.append([ str(thisZoneDetails["label"]), thisZone["entrances"] ])
                     # store away the zoneID and serial of the camera to pass to the form so when someone clicks
                     # on a bar or button to expand detail, it comes back to this function in the POST section
                     # to know which zone from which camera to use
-                    # also, put the zone name above, not the zone number since it is too big
-                    # and messes up the graph
+
+
+                    #we are assuming below that we have a chart per each MV capable camera, if that changes
+                    # we need to figure out aonther way to index theDeviceDetails or use some other method
+                    # to store/retrieve the data besides a list of lists
+                    theDeviceDetails[theChartNum][2].append([thisZoneDetails["zoneId"], thisZoneDetails["label"]])
+
                 mv_overview_chart.add_rows(the_rows)
                 charts.register(mv_overview_chart)
 
                 theChartNum+=1
 
-            return render_template("mvOverview.html",allTheCharts=theDeviceCharts)
+            print("Rendering overview form with:")
+            print("allTheDetails=",theDeviceDetails)
+
+            return render_template("mvOverview.html",allTheCharts=theDeviceCharts,allTheDetails=theDeviceDetails)
 
         else:
             return render_template('error.html'), 404

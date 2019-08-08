@@ -119,29 +119,22 @@
                             <h1>MV Overview</a></h1>
                                 <h2>Last 7 days</h2>
                         </div>
-
+                        {% set count = 0 %}
                         {% for theDeviceChart in allTheCharts %}
                           {{charts[theDeviceChart]}}
 
-                        <div class="container">
-                            <div class='row'>
-
-
-                                 <div class='col-xs-12 col-md-4'>
-
-                                <form action="{{ url_for('mvOverview') }}" method="post">
-                                    <input type="submit" name="zone_details" value="Zone 0 Details" onclick="loading();">
-                                </form>
+                            <div class="container">
+                                <div class='row'>
+                                    {% for theDeviceZoneDetails in allTheDetails[count][2] %}
+                                         <div class='col-xs-12 col-md-2'>
+                                        <form action="{{ url_for('mvOverview') }}" method="post">
+                                            <button type="submit" name="zone_details" value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}" onclick="loading();">{{theDeviceZoneDetails[1]}} details</button>
+                                        </form>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                                 <div class='col-xs-12 col-md-4'>
-
-                                <form action="{{ url_for('mvOverview') }}" method="post">
-                                    <input type="submit" name="zone_details" value="Zone XXX Details" onclick="loading();">
-                                </form>
-                                </div>
-
                             </div>
-                        </div>
+                            {% set count = count + 1 %}
 
                         {% endfor %}
 
