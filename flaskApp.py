@@ -396,8 +396,8 @@ def mvOverview():
 
                 #now create the chart object using the serial as the name and the name of the device as the title
                 mv_overview_chart = ColumnChart("chart"+str(theChartNum), options={"title": theDevice["name"],
-                                                                          "width": 500,
-                                                                          "height": 250,
+                                                                          "width": 800,
+                                                                          "height": 400,
                                                                           "hAxis.title": "Hour",
                                                                           "animation": animation_option})
                 mv_overview_chart.add_column("string", "Zone")
@@ -407,7 +407,11 @@ def mvOverview():
                 for j in range(len(MVZones)):
                     thisZone=MVZones[j]
                     the_rows.append([ "Zone "+str(thisZone["zoneId"]), thisZone["entrances"] ])
-
+                    # store away the zoneID and serial of the camera to pass to the form so when someone clicks
+                    # on a bar or button to expand detail, it comes back to this function in the POST section
+                    # to know which zone from which camera to use
+                    # also, put the zone name above, not the zone number since it is too big
+                    # and messes up the graph
                 mv_overview_chart.add_rows(the_rows)
                 charts.register(mv_overview_chart)
 
