@@ -349,9 +349,6 @@ def mvOverview():
             mv_history_chart.add_rows(the_rows)
             charts.register(mv_history_chart)
 
-            #TODO now iterate through all non-zero timestamps stored in theHoursMaxEntrancesTimestampDict
-            #and retrieve the URL for a screenshot for that time. Pass that list of of URLs to the page
-            #to be rendered and make sure the user friendly timestamp is also shown
             print("Max Entrances Timestamps: ", theHoursMaxEntrancesTimestampDict)
 
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
