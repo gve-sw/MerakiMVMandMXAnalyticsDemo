@@ -1,0 +1,192 @@
+{% extends "topMenu.html" %}
+{% block above %}
+<!-- Homepage html.  Requests input for a single time to retrieve all devices within network at that interval -->
+
+<!doctype html>
+<html class="cui" lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>CMX Aggregate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.css') }}" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='public/css/animate.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-styleguide.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='public/css/featherlight.min.css') }}">
+    <link rel="icon" href="assets/img/favicon.png" type="image/x-icon">
+
+    <!-- import plugin script for charts from chart.js -->
+    <script src="static/public/js/Chart.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='public/js/styleguide.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/jquery-scrollto.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/clipboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/featherlight.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/Markdown.Converter.js') }}"></script>
+    <script type="text/javascript">
+    function downloadCSV(csv, filename) {
+    var csvFile;
+    var downloadLink;
+    // CSV file
+    csvFile = new Blob([csv], {type: "text/csv"});
+    // Download link
+    downloadLink = document.createElement("a");
+    // File name
+    downloadLink.download = filename;
+    // Create a link to the file
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    // Hide download link
+    downloadLink.style.display = "none";
+    // Add the link to DOM
+    document.body.appendChild(downloadLink);
+    // Click download link
+    downloadLink.click();
+    }
+
+    function exportTableToCSV(filename) {
+        var csv = [];
+        var rows = document.querySelectorAll("table tr");
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll("td, th");
+
+            for (var j = 0; j < cols.length; j++)
+                row.push(cols[j].innerText);
+
+            csv.push(row.join(","));
+        }
+        // Download CSV file
+        downloadCSV(csv.join("\n"), filename);
+    }
+    </script>
+    <style>
+    #select{
+      width:125px;
+      height: 25px;
+    }
+    option{
+      font-size: 20px;
+    }
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+    </style>
+</head>
+    <body>
+        <div class="content-fluid">
+
+            <main>
+                <header class="header">
+
+{% endblock %}
+
+{% block below %}
+                </header>
+                <div class="content">
+                    <div class="container">
+                        <div class="section">
+                            <h1><a href='https://account.meraki.com/secure/login/dashboard_login' target="_blank">Aggregated CMX Times</a></h1>
+
+                        </div>
+
+                        <!-- bar chart canvas element using chart.js -->
+                        <canvas id="chart" width="300" height="200"></canvas>
+                        <script>
+                           // bar chart data
+                           var barData = {
+                           labels : {{ cmxlabels | safe }},
+                           datasets : [
+                              {
+                                    fillColor: "rgba(151,187,205,0.2)",
+                                    strokeColor: "rgba(151,187,205,1)",
+                                    pointColor: "rgba(151,187,205,1)",
+                                 data : {{ cmxvalues }}
+                              }
+                              ]
+                           }
+                           // get bar chart canvas
+                           var mychart = document.getElementById("chart").getContext("2d");
+                           steps = 10
+                           max = 10
+                           // draw bar chart
+                           new Chart(mychart).Bar(barData, {
+                                scaleOverride: true,
+                                scaleSteps: steps,
+                                scaleStepWidth: Math.ceil(max / steps),
+                                scaleStartValue: 0,
+                                scaleShowVerticalLines: true,
+                                scaleShowGridLines : true,
+                                barShowStroke : true,
+                                scaleShowLabels: true
+                           });
+                        </script>
+
+                    <br />
+                    <br />
+
+                      <table>
+                        <thead>
+                          <tr bgcolor="#7EF5FA" align="center">
+                            <th>MAC</th>
+                            <th>Visits</th>
+                            <th>Total Time</th>
+                            <th>First Seen</th>
+                            <th>Last Seen</th?
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for x in cmxData %}
+                          <tr>
+                            <td>{{ x['MAC'] }}</td>
+                            <td>{{ x['visits'] }}</td>
+                            <td>{{ x['totalTime'] }}</td>
+                            {% for y in x['timeData'] %}
+                            <td>{{ y['firstSeen'] }}</td>
+                            <td>{{ y['lastSeen'] }}</td>
+                          </tr>
+                            <tr><td></td><td></td><td></td>
+                            {% endfor %}
+                            <td></td><td></td>
+                          </tr>
+                          {% endfor %}
+
+                        </tbody>
+
+                        </table>
+                        <div>
+                        </div>
+
+                        <div class="row base-margin-top">
+
+                        </div>
+                    </div>
+                </div>
+                <footer class="footer footer--new">
+                    <div class="footer__links">
+                        <ul class="list">
+                            <li><a href="http://www.cisco.com/cisco/web/siteassets/contacts/index.html" target="_blank">Contacts</a></li>
+                            <li><a href="https://secure.opinionlab.com/ccc01/o.asp?id=jBjOhqOJ" target="_blank">Feedback</a></li>
+                            <li><a href="http://www.cisco.com/c/en/us/about/sitemap.html" target="_blank">Site Map</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/terms_condition.html" target="_blank">Terms & Conditions</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/privacy_full.html" target="_blank">Privacy Statement</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/privacy_full.html#cookies" target="_blank">Cookie Policy</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/trademark.html" target="_blank">Trademarks</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer__legal">
+                        <div class="footer__logo">
+                            <a href="http://www.cisco.com" target="_blank">
+                                <span class="icon-cisco"></span>
+                            </a>
+                        </div>
+                        <div class="footer__copyright">
+                            <div>Copyright &copy; 2018 Cisco Systems Inc.</div>
+                            <div>All rights reserved.</div>
+                        </div>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </body>
+</html>
+{% endblock %}

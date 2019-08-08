@@ -1,0 +1,18 @@
+@charset "UTF-8";
+/* Bottom left text */
+.bottom-left {
+  position: absolute;
+  bottom: 8px;
+  left: 16px;
+}
+
+
+.bottom-left .content {
+  position: absolute;
+  bottom: 0;
+  background: rgb(0, 0, 0); /* Fallback color */
+  background: rgba(0, 0, 0, 0.5); /* Black background with 0.5 opacity */
+  color: #ffffff;
+  width: 100%;
+  padding: 20px;
+}

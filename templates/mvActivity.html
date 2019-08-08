@@ -1,0 +1,209 @@
+{% extends "topMenu.html" %}
+{% block above %}
+<!-- Homepage html.  Requests input for a single time to retrieve all devices within network at that interval -->
+
+<!doctype html>
+<html class="cui" lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MV Activity</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.css') }}" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='public/css/animate.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-styleguide.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='public/css/featherlight.min.css') }}">
+    <link rel="icon" href="assets/img/favicon.png" type="image/x-icon">
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='public/js/styleguide.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/jquery-scrollto.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/clipboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/featherlight.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='public/js/Markdown.Converter.js') }}"></script>
+    <script type="text/javascript">
+    function downloadCSV(csv, filename) {
+    var csvFile;
+    var downloadLink;
+    // CSV file
+    csvFile = new Blob([csv], {type: "text/csv"});
+    // Download link
+    downloadLink = document.createElement("a");
+    // File name
+    downloadLink.download = filename;
+    // Create a link to the file
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    // Hide download link
+    downloadLink.style.display = "none";
+    // Add the link to DOM
+    document.body.appendChild(downloadLink);
+    // Click download link
+    downloadLink.click();
+    }
+
+    function exportTableToCSV(filename) {
+        var csv = [];
+        var rows = document.querySelectorAll("table tr");
+
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll("td, th");
+
+            for (var j = 0; j < cols.length; j++)
+                row.push(cols[j].innerText);
+
+            csv.push(row.join(","));
+        }
+        // Download CSV file
+        downloadCSV(csv.join("\n"), filename);
+    }
+    </script>
+    <style>
+    #select{
+      width:125px;
+      height: 25px;
+    }
+    option{
+      font-size: 20px;
+    }
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+    </style>
+</head>
+    <body>
+        <div class="content-fluid">
+
+            <main>
+                <header class="header">
+{% endblock %}
+
+{% block below %}
+                </header>
+                <div class="content">
+                    <div class="container">
+                        <div class="section">
+                            <h1><a href='https://account.meraki.com/secure/login/dashboard_login' target="_blank">MV Activity</a></h1>
+
+                        </div>
+
+
+
+                      <table>
+                        <thead>
+                          <tr bgcolor="#7EF5FA" align="center">
+                            <th>Time</th>
+                            <th>Activity</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>0-1</td>
+                            <td>{{ x[0] }}</td>
+                          </tr><tr>
+                            <td>1-2</td>
+                            <td>{{ x[1] }}</td>
+                            </tr><tr>
+                            <td>2-3</td>
+                            <td>{{ x[2] }}</td>
+                            </tr><tr>
+                              <td>3-4</td>
+                              <td>{{ x[3] }}</td>
+                              </tr><tr>
+                            <td>4-5</td>
+                            <td>{{ x[4] }}</td>
+                            </tr><tr>
+                            <td>5-6</td>
+                            <td>{{ x[5] }}</td>
+                            </tr><tr>
+                            <td>6-7</td>
+                            <td>{{ x[6] }}</td>
+                            </tr><tr>
+                            <td>7-8</td>
+                            <td>{{ x[7] }}</td>
+                            </tr><tr>
+                            <td>8-9</td>
+                            <td>{{ x[8] }}</td>
+                            </tr><tr>
+                              <td>9-10</td>
+                              <td>{{ x[9] }}</td>
+                              </tr><tr>
+                            <td>10-11</td>
+                            <td>{{ x[10] }}</td>
+                            </tr><tr>
+                            <td>11-12</td>
+                            <td>{{ x[11] }}</td>
+                            </tr><tr>
+                            <td>12-13</td>
+                            <td>{{ x[12] }}</td>
+                            </tr><tr>
+                            <td>13-14</td>
+                            <td>{{ x[13] }}</td>
+                            </tr><tr>
+                            <td>14-15</td>
+                            <td>{{ x[14] }}</td>
+                            </tr><tr>
+                            <td>15-16</td>
+                            <td>{{ x[15] }}</td>
+                            </tr><tr>
+                            <td>16-17</td>
+                            <td>{{ x[16] }}</td>
+                            </tr><tr>
+                            <td>17-18</td>
+                            <td>{{ x[17] }}</td>
+                            </tr><tr>
+                            <td>18-19</td>
+                            <td>{{ x[18] }}</td>
+                            </tr><tr>
+                              <td>19-20</td>
+                              <td>{{ x[19] }}</td>
+                              </tr><tr>
+                            <td>20-21</td>
+                            <td>{{ x[20] }}</td>
+                            </tr><tr>
+                            <td>21-22</td>
+                            <td>{{ x[21] }}</td>
+                            </tr><tr>
+                              <td>22-23</td>
+                              <td>{{ x[22] }}</td>
+                              </tr><tr>
+                            <td>23-24</td>
+                            <td>{{ x[23] }}</td>
+                            </tr>
+
+                        </tbody>
+                        </table>
+                        <div>
+                        </div>
+
+                        <div class="row base-margin-top">
+
+                        </div>
+                    </div>
+                </div>
+                <footer class="footer footer--new">
+                    <div class="footer__links">
+                        <ul class="list">
+                            <li><a href="http://www.cisco.com/cisco/web/siteassets/contacts/index.html" target="_blank">Contacts</a></li>
+                            <li><a href="https://secure.opinionlab.com/ccc01/o.asp?id=jBjOhqOJ" target="_blank">Feedback</a></li>
+                            <li><a href="http://www.cisco.com/c/en/us/about/sitemap.html" target="_blank">Site Map</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/terms_condition.html" target="_blank">Terms & Conditions</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/privacy_full.html" target="_blank">Privacy Statement</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/privacy_full.html#cookies" target="_blank">Cookie Policy</a></li>
+                            <li><a href="http://www.cisco.com/web/siteassets/legal/trademark.html" target="_blank">Trademarks</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer__legal">
+                        <div class="footer__logo">
+                            <a href="http://www.cisco.com" target="_blank">
+                                <span class="icon-cisco"></span>
+                            </a>
+                        </div>
+                        <div class="footer__copyright">
+                            <div>Copyright &copy; 2018 Cisco Systems Inc.</div>
+                            <div>All rights reserved.</div>
+                        </div>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </body>
+</html>
+{% endblock %}
