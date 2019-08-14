@@ -10,7 +10,7 @@ from datetime import datetime
 from flask_googlecharts import GoogleCharts
 from flask_googlecharts import BarChart, MaterialLineChart, ColumnChart
 from flask_googlecharts.utils import prep_data
-from config import COLLECT_CAMERAS_MVSENSE_CAPABLE
+from config import COLLECT_CAMERAS_MVSENSE_CAPABLE, NETWORK_ID
 from compute import *
 import time
 import pytz    # $ pip install pytz
@@ -20,8 +20,8 @@ app = Flask(__name__)
 charts = GoogleCharts(app)
 
 
-@app.route('/', methods=['GET','POST'])
-def index():
+@app.route('/rawCMX', methods=['GET','POST'])
+def rawCMX():
     if request.method == 'POST':
         select = flask.request.form.get('select')
         if select == 'cmxTimes':
@@ -45,7 +45,7 @@ def index():
             elif row['MAC'] == '':
                 count = count+1
                 data[arrayCount]['timestamps'].append({'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']})
-    return render_template("index.html",data=data)
+    return render_template("rawCMX.html",data=data)
 
 @app.route('/cmxTimes', methods=['GET','POST'])
 def cmxTimes():
@@ -270,6 +270,12 @@ def correlation():
     newData = getCorrelation(data,mvData)
     return render_template("correlation.html",correlation=newData)
 
+@app.route('/',methods=['GET'])
+def index():
+    # this is for the GET to show the overview
+    return render_template("pleasewait.html", theReason='Getting all cameras for network: ' + NETWORK_ID)
+
+
 @app.route('/mvOverview',methods=['GET','POST'])
 def mvOverview():
     # extract MVSense over view data for a camera from the analytics API
@@ -332,18 +338,19 @@ def mvOverview():
 
                 #convert to localtimezone
                 local_timezone = tzlocal.get_localzone()  # get pytz tzinfo
+                local_timezone_str = str(local_timezone)
                 theLocalEndTsTimeStamp = theEndTsTimeStamp.replace(tzinfo=pytz.utc).astimezone(local_timezone)
 
                 thislocalMinuteMedTimestamp= time.mktime(theLocalEndTsTimeStamp.timetuple())-30
                 thislocalMinuteMedISOts = datetime.fromtimestamp(thislocalMinuteMedTimestamp).isoformat() + "Z"
                 localHour = thislocalMinuteMedISOts.partition('T')[2][:2]
 
-                print("Timestamp string:",thisEndTs )
+                #print("Timestamp string:",thisEndTs )
 
-                print("Numerical equivalent: ", thisMinuteMedTimestamp)
-                print("Local Numerical equivalent: ", thislocalMinuteMedTimestamp)
-                print("ISO equivalent: ", thisMinuteMedISOts)
-                print("local ISO equivalent: ", thislocalMinuteMedISOts)
+                #print("Numerical equivalent: ", thisMinuteMedTimestamp)
+                #print("Local Numerical equivalent: ", thislocalMinuteMedTimestamp)
+                #print("ISO equivalent: ", thisMinuteMedISOts)
+                #print("local ISO equivalent: ", thislocalMinuteMedISOts)
 
                 thisEntrances = MVHistory[j]["entrances"]
 
@@ -403,9 +410,9 @@ def mvOverview():
             # wait for the URLs to be valid
             print("Waiting 10 seconds...")
             time.sleep(10)
-            return render_template("mvHistory.html", historyChart=mv_history_chart, snapshotsArray=theScreenshots)
+            return render_template("mvHistory.html", historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
     else:
-        # this is for the GET to show the overview
+
         devices_data=getDevices()
         if devices_data != 'link error':
 
