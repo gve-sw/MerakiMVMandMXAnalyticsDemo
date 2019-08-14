@@ -13,7 +13,8 @@ from flask_googlecharts.utils import prep_data
 from config import COLLECT_CAMERAS_MVSENSE_CAPABLE
 from compute import *
 import time
-#import datetime
+import pytz    # $ pip install pytz
+import tzlocal # $ pip install tzlocal
 
 app = Flask(__name__)
 charts = GoogleCharts(app)
@@ -275,7 +276,8 @@ def mvOverview():
     MVZones = []
     animation_option = {"startup": True, "duration": 1000, "easing": 'out'}
 
-
+    #First we have the logic for creating the page with all the historical details of zone below,
+    #further down is the logic to show the Overview of all cameras and their respective zones
     if request.method == 'POST':
         # This is for the historical detail
         zoneDetails = request.form['zone_details']
@@ -309,6 +311,7 @@ def mvOverview():
             theHoursDict = dict()
             theHoursMaxEntrancesDict = dict()
             theHoursMaxEntrancesTimestampDict = dict()
+            theLocalHoursMaxEntrancesTimestampDict = dict()
 
             for j in range(len(MVHistory)):
                 # grab all events in MVHistory, then
@@ -319,34 +322,60 @@ def mvOverview():
 
                 thisStartTs = MVHistory[j]["startTs"]
                 thisEndTs = MVHistory[j]["endTs"]
+
                 thisHour = thisEndTs.partition('T')[2][:2]
-                thisMinuteMedTimestamp= time.mktime(datetime.strptime(thisEndTs, "%Y-%m-%dT%H:%M:%S.%fZ").timetuple())-30
+
+                theEndTsTimeStamp=datetime.strptime(thisEndTs, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+                thisMinuteMedTimestamp= time.mktime(theEndTsTimeStamp.timetuple())-30
                 thisMinuteMedISOts=datetime.fromtimestamp(thisMinuteMedTimestamp).isoformat()+"Z"
-                #print("Timestamp string:",thisEndTs )
-                #print("Numerical equivalent: ", thisMinuteMedTimestamp)
-                #print("ISO equivalent: ", thisMinuteMedISOts)
+
+                #convert to localtimezone
+                local_timezone = tzlocal.get_localzone()  # get pytz tzinfo
+                theLocalEndTsTimeStamp = theEndTsTimeStamp.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+                thislocalMinuteMedTimestamp= time.mktime(theLocalEndTsTimeStamp.timetuple())-30
+                thislocalMinuteMedISOts = datetime.fromtimestamp(thislocalMinuteMedTimestamp).isoformat() + "Z"
+                localHour = thislocalMinuteMedISOts.partition('T')[2][:2]
+
+                print("Timestamp string:",thisEndTs )
+
+                print("Numerical equivalent: ", thisMinuteMedTimestamp)
+                print("Local Numerical equivalent: ", thislocalMinuteMedTimestamp)
+                print("ISO equivalent: ", thisMinuteMedISOts)
+                print("local ISO equivalent: ", thislocalMinuteMedISOts)
 
                 thisEntrances = MVHistory[j]["entrances"]
 
-                if thisHour in theHoursDict.keys():
+                # Now we will use localHour instead of thisHour as the Dict key to hold the accounting for body
+                # detection per hour since that is what is shown on the graph, it should behave the same otherwise
+                # as when we used thisHour originally, but show a local hour instead of UTC which was confusing.
+
+                if localHour in theHoursDict.keys():
                     #increase the number of entrances of this hour slot
-                    theHoursDict[thisHour]=theHoursDict[thisHour]+thisEntrances
+                    theHoursDict[localHour]=theHoursDict[localHour]+thisEntrances
                     #check to see if the entrances for this minute are the most for this hour
-                    if thisEntrances>theHoursMaxEntrancesDict[thisHour]:
+                    if thisEntrances>theHoursMaxEntrancesDict[localHour]:
                         #if so, make these entrances the most for the timeframe and save the timestamp for the
                         #middle of the minute with the most entrances
-                        theHoursMaxEntrancesDict[thisHour]=thisEntrances
-                        theHoursMaxEntrancesTimestampDict[thisHour]=thisMinuteMedISOts
+                        theHoursMaxEntrancesDict[localHour]=thisEntrances
+                        theHoursMaxEntrancesTimestampDict[localHour]=thisMinuteMedISOts
+                        #keep track of local version as well
+                        theLocalHoursMaxEntrancesTimestampDict[localHour]=thislocalMinuteMedISOts
+
                 else:
                     #if this is the first time we see this timeslot, make the current entrances
                     #the starting balance for the dict entry
-                    theHoursDict[thisHour] = thisEntrances
-                    theHoursMaxEntrancesDict[thisHour] = thisEntrances
+                    theHoursDict[localHour] = thisEntrances
+                    theHoursMaxEntrancesDict[localHour] = thisEntrances
                     #only keep timestamp if there is at least one entry detected
                     if thisEntrances>0:
-                        theHoursMaxEntrancesTimestampDict[thisHour] = thisMinuteMedISOts
+                        theHoursMaxEntrancesTimestampDict[localHour] = thisMinuteMedISOts
+                        theLocalHoursMaxEntrancesTimestampDict[localHour] = thislocalMinuteMedISOts
                     else:
-                        theHoursMaxEntrancesTimestampDict[thisHour]=''
+                        theHoursMaxEntrancesTimestampDict[localHour]=''
+                        theLocalHoursMaxEntrancesTimestampDict[localHour]=''
+
 
             for dEntryKey in theHoursDict.keys():
                 the_rows.append([dEntryKey, theHoursDict[dEntryKey]])
@@ -355,6 +384,7 @@ def mvOverview():
             charts.register(mv_history_chart)
 
             print("Max Entrances Timestamps: ", theHoursMaxEntrancesTimestampDict)
+            print("Max Local Entrances Timestamps: ", theLocalHoursMaxEntrancesTimestampDict)
 
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
             #this is to be passed to the form that will render them
@@ -366,7 +396,9 @@ def mvOverview():
                     print("getCameraSCreenshot returned: ",screenShotURLdata)
                     if  screenShotURLdata != 'link error':
                         screenShotURL = json.loads(screenShotURLdata)
-                        theScreenshots.append([ theHoursMaxEntrancesTimestampDict[dTimeStampKey], screenShotURL["url"]])
+                        #Passing theLocalHoursMaxEntrancesTimestampDict[dTimeStampKey] instead of theHoursMaxEntrancesTimestampDict[dTimeStampKey] below
+                        #to show a local timestamp we calculated in a previous loop
+                        theScreenshots.append([ theLocalHoursMaxEntrancesTimestampDict[dTimeStampKey], screenShotURL["url"]])
 
             # wait for the URLs to be valid
             print("Waiting 10 seconds...")
