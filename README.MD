@@ -1,16 +1,25 @@
 # Meraki MV and MX Analytics Demo
 
 This demo utilizes Meraki MV Sense camera data in conjunction with Meraki CMX access point data to output human consumable information and correlations regarding activities such as number of visits, busiest times in a day, number of people etc.  Streaming data from MV sense and CMX are stored in local files and are then utilized for further analysis and formatting.  A web GUI is used to display and interact with the data with options for csv download.
-It also implements a simplified dashboard that focuses on showing the number of visitors on each camera in a Netork divided by zones and
-zooming into a particular zone to see hourly details and relevant camera snapshots.
 
+It also implements a simplified dashboard that focuses on showing the number of visitors on each camera in a Network divided by zones and
+zooming into a particular zone to see hourly details and relevant camera snapshots.
+  
+  
 This application has relevant use cases for asset utilization tracking, customer activity tracking, and much more.
 
-There are 3 main functionalities in this repository.  The cmxreceiver.py program receives streams of cmx data from Meraki access points and saves this data in cmxData.csv.  The mvSense.py program receives streams of MV Sense data from Meraki video cameras and stores this data in mvData.csv.  The flaskApp.py then utilizes functions in compute.py to analyze and format the data into a web application.  Config.py contains all of the global variables and configuration needed throughout the code, including keys and thresholds.
+There are 3 main functionalities in this repository:  
+
+   The **cmxreceiver.py** program receives streams of cmx data from Meraki access points and saves this data in cmxData.csv.  
+
+   The **mvSense.py** program receives streams of MV Sense data from Meraki video cameras and stores this data in mvData.csv.   
+
+   The **flaskApp.py** then utilizes functions in compute.py to analyze and format the data into a web application.  
+
 
 ## Configuration
 
-**NOTE:** There is no config.sys sample file in the repository yet. 
+**Config.py** contains all of the global variables and configuration needed throughout the code, including keys and thresholds.
 
 ### MV Sense Camera Setup  
 Leverage Meraki new camera API and MQTT capability to create a notification service. When the camera detects a person consistently appears in a particular zone the service will send a Webex team message to a Webex team room with a video link which will directly go to the video footage when that even occurred. This is useful for alerting unexpected person movement in off-hours. Here is more information on MV sense data: https://developer.cisco.com/meraki/build/mv-sense-documentation/
