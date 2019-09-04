@@ -1,0 +1,6 @@
+requests==2.20.1
+pytz==2018.5
+Flask_GoogleCharts==0.1.0
+Flask==1.0.2
+tzlocal==2.0.0
+paho_mqtt==1.4.0
