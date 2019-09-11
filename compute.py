@@ -104,6 +104,24 @@ def getMVOverview(serial_number):
         return(resp.text)
     return('link error')
 
+
+# gets meraki MV zones for a camera
+def getMVZones(serial_number):
+    # Get video link
+    url = "https://api.meraki.com/api/v0/devices/"+serial_number+"/camera/analytics/zones"
+
+    headers = {
+        'X-Cisco-Meraki-API-Key': MERAKI_API_KEY,
+        "Content-Type": "application/json"
+    }
+    resp = requests.request("GET", url, headers=headers)
+    print("URL: ", url)
+    print("Call to MV zones response: ", resp)
+    if int(resp.status_code / 100) == 2:
+        return(resp.text)
+    return('link error')
+
+
 # gets meraki MV activity summary overview for a camera
 def getCameraScreenshot(serial_number,timestamp):
     # Get video link
