@@ -58,14 +58,13 @@
   
 
     <!-- ORIGINAL CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/mvsense.css') }}" >
     <link rel="stylesheet" href="{{ url_for('static', filename='public/css/animate.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='public/css/featherlight.min.css') }}">
     <link rel="icon" href="assets/img/favicon.png" type="image/x-icon">
 
 
     
-    <!-- custom CSS -->
+    <!-- Footer CSS -->
     <style>
         .footer {
             position: absolute;
@@ -78,6 +77,9 @@
 
         }
     </style>
+
+    <!-- Page Specific CSS -->
+    {% block css %}{% endblock %}
 
 </head>
 
@@ -272,6 +274,9 @@
 
 
     </script>
+
+    <!-- Page Specific Javascript -->
+    {% block js %}{% endblock %}
 
 </body>
 
