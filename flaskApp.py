@@ -465,10 +465,10 @@ def mvOverview():
                 theDeviceCharts.append("chart"+str(theChartNum))
 
                 #now append the top level details of the camera for this chart to theDeviceDetails
-                theDeviceDetails.append([theDevice["serial"],theDevice["name"],[]])
+                theDeviceDetails.append([theDevice["serial"],theDevice["model"],[]])
 
                 #now create the chart object using the serial as the name and the name of the device as the title
-                mv_overview_chart = ColumnChart("chart"+str(theChartNum), options={"title": theDevice["name"],
+                mv_overview_chart = ColumnChart("chart"+str(theChartNum), options={"title": theDevice["model"],
                                                                           "width": 800,
                                                                           "height": 400,
                                                                           "hAxis.title": "Hour",
