@@ -21,7 +21,7 @@
 {% for theDeviceZoneDetails in allTheDetails[count][2] %}
 <div class='col-xs-12 col-md-2'>
     <form action="{{ url_for('mvOverview') }}" method="post">
-        <button type="submit" name="zone_details"
+        <button class="btn btn--primary" type="submit" name="zone_details"
             value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}"
             onclick="loading();">{{theDeviceZoneDetails[1]}} details</button>
     </form>
