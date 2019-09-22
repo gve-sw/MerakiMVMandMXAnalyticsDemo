@@ -120,49 +120,56 @@
                     <ul id="rootSidebar">
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="MV Overview">
+                            <a tabindex="0" title="MV Overview" href="{{ url_for('mvOverview')}}">
                                 <span class="icon-home"></span>
                                 <span>MV Overview</span>
                             </a>
                         </li>
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="Raw CMX">
+                            <a tabindex="0" title="Raw CMX" href="{{ url_for('rawCMX')}}">
                                 <span class="icon-storage"></span>
                                 <span>Raw CMX</span>
                             </a>
                         </li>
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="CMX Times">
+                            <a tabindex="0" title="CMX Times" href="{{ url_for('cmxTimes')}}">
                                 <span class="icon-time"></span>
                                 <span>CMX Times</span>
                             </a>
                         </li>
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="Filter">
+                            <a tabindex="0" title="Filter" href="{{ url_for('hourFilter')}}">
                                 <span class="icon-filter"></span>
                                 <span>Filter</span>
                             </a>
                         </li>
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="MV Sense">
+                            <a tabindex="0" title="MV Sense" href="{{ url_for('mvSense')}}">
                                 <span class="icon-aux-camera"></span>
                                 <span>MV Sense</span>
                             </a>
                         </li>
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="CMX Activity">
+                            <a tabindex="0" title="CMX Activity" href="{{ url_for('cmxActivity')}}">
                                 <span class="icon-activities"></span>
                                 <span>CMX Activity</span>
                             </a>
                         </li>
 
                         <li class="sidebar__item selected">
-                            <a tabindex="0" title="Correlation">
+                            <a tabindex="0" title="MV Activity" href="{{ url_for('mvActivity')}}">
+                                <span class="icon-too-slow"></span>
+                                <span>MV Activity</span>
+                            </a>
+                        </li>
+
+                        <li class="sidebar__item selected">
+                            <a tabindex="0" title="Correlation" href="{{ url_for('correlation')}}">
                                 <span class="icon-analysis"></span>
                                 <span>Correlation</span>
                             </a>
@@ -185,7 +192,7 @@
                                     </div>
                                 </div>
                                 <div class="panel panel--loose panel--raised">
-                                    <h2 class="subtitle">{% block section2title %}{% endblock % }</h2>
+                                    <h2 class="subtitle">{% block section2title %}{% endblock %}</h2>
                                     <hr>
                                     <div class="section">
                                         {% block section2content %}{% endblock %}
