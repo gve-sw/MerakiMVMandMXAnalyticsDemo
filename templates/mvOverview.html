@@ -1,196 +1,77 @@
-{% extends "topMenu.html" %}
-{% block above %}
-<!-- Homepage html.  Requests input for a single time to retrieve all devices within network at that interval -->
-
-<!doctype html>
-<html class="cui" lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>MV Overview</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/mvsense.css') }}" >
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.css') }}" >
-    <link rel="stylesheet" href="{{ url_for('static', filename='public/css/animate.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-styleguide.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='public/css/featherlight.min.css') }}">
-    <link rel="icon" href="assets/img/favicon.png" type="image/x-icon">
+{% extends "base.html" %}
 
 
-    <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='public/js/styleguide.js') }}"></script>
-    <script src="{{ url_for('static', filename='public/js/jquery-scrollto.js') }}"></script>
-    <script src="{{ url_for('static', filename='public/js/clipboard.js') }}"></script>
-    <script src="{{ url_for('static', filename='public/js/featherlight.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='public/js/Markdown.Converter.js') }}"></script>
-    <script type="text/javascript">
-    function downloadCSV(csv, filename) {
-    var csvFile;
-    var downloadLink;
-    // CSV file
-    csvFile = new Blob([csv], {type: "text/csv"});
-    // Download link
-    downloadLink = document.createElement("a");
-    // File name
-    downloadLink.download = filename;
-    // Create a link to the file
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    // Hide download link
-    downloadLink.style.display = "none";
-    // Add the link to DOM
-    document.body.appendChild(downloadLink);
-    // Click download link
-    downloadLink.click();
-    }
+{% block title %}MV Overview{% endblock %}
 
-    function exportTableToCSV(filename) {
-        var csv = [];
-        var rows = document.querySelectorAll("table tr");
+{% block pageTitle %}MV Overview{% endblock %}
 
-        for (var i = 0; i < rows.length; i++) {
-            var row = [], cols = rows[i].querySelectorAll("td, th");
-
-            for (var j = 0; j < cols.length; j++)
-                row.push(cols[j].innerText);
-
-            csv.push(row.join(","));
-        }
-        // Download CSV file
-        downloadCSV(csv.join("\n"), filename);
-    }
-
-
-    </script>
-
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-
-    {{ charts_init }}
-
-
-    <script type="text/javascript">
-        function loading(){
-            $("#loading").show();
-            $("#content").hide();
-        }
-    </script>
-
-
-
-    <style>
-    #select{
-      width:125px;
-      height: 25px;
-    }
-    option{
-      font-size: 10px;
-    }
-    table, th, td {
-        border: 1px solid black;
-        border-collapse: collapse;
-    }
-    div#loading {
-    width: 1000px;
-    height: 500px;
-    display: none;
-    background: url(/static/assets/img/ajax-loader.gif) no-repeat;
-    background-position: center;
-    cursor: wait;
-    }
-    </style>
-</head>
-    <body>
-        <div class="content-fluid">
-
-            <main>
-                <header class="header">
+{% block section1title %}
+<h1>MV Overview</a></h1>
+<h2>Last 7 days</h2>
 {% endblock %}
 
 
+{% block section1content %}
+
+<!--Chart-->
+{% set count = 0 %}
+{% for theDeviceChart in allTheCharts %}
+{{charts[theDeviceChart]}}
 
 
 
-{% block below %}
+{% for theDeviceZoneDetails in allTheDetails[count][2] %}
+<div class='col-xs-12 col-md-2'>
+    <form action="{{ url_for('mvOverview') }}" method="post">
+        <button type="submit" name="zone_details"
+            value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}"
+            onclick="loading();">{{theDeviceZoneDetails[1]}} details</button>
+    </form>
+</div>
+{% endfor %}
 
 
-                </header>
-                <div id="loading"></div>
-                <div id="content" class="content">
-                    <div class="container">
-                        <div class="section">
-                            <h1>MV Overview</a></h1>
-                                <h2>Last 7 days</h2>
-                        </div>
-                        {% set count = 0 %}
-                        {% for theDeviceChart in allTheCharts %}
-                          {{charts[theDeviceChart]}}
+{% set count = count + 1 %}
 
-                            <div class="container">
-                                <div class='row'>
-                                    {% for theDeviceZoneDetails in allTheDetails[count][2] %}
-                                         <div class='col-xs-12 col-md-2'>
-                                        <form action="{{ url_for('mvOverview') }}" method="post">
-                                            <button type="submit" name="zone_details" value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}" onclick="loading();">{{theDeviceZoneDetails[1]}} details</button>
-                                        </form>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% set count = count + 1 %}
-
-                        {% endfor %}
+{% endfor %}
 
 
-                        <div>
-                        </div>
+{% endblock %}
 
 
-                        <div class="row base-margin-top">
-
-                        </div>
-                    </div>
-                </div>
+<!--Page Specific JS-->
+{% block js %}
 
 
-                <script type="text/javascript">
-                                // Load the Visualization API and the corechart package.
-                                google.charts.load('current', {'packages':['corechart']});
 
-                                // Every time the table fires the "select" event, it should call your
-                                // selectHandler() function.
-                                google.visualization.events.addListener( chart-options-chart0 , 'select', selectHandler);
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 
-                                function selectHandler(e) {
-                                    alert('A table row was selected');
-                                }
-                </script>
+{{ charts_init }}
 
 
-                <footer class="footer footer--new">
-                    <div class="footer__links">
-                        <ul class="list">
-                            <li><a href="http://www.cisco.com/cisco/web/siteassets/contacts/index.html" target="_blank">Contacts</a></li>
-                            <li><a href="https://secure.opinionlab.com/ccc01/o.asp?id=jBjOhqOJ" target="_blank">Feedback</a></li>
-                            <li><a href="http://www.cisco.com/c/en/us/about/sitemap.html" target="_blank">Site Map</a></li>
-                            <li><a href="http://www.cisco.com/web/siteassets/legal/terms_condition.html" target="_blank">Terms & Conditions</a></li>
-                            <li><a href="http://www.cisco.com/web/siteassets/legal/privacy_full.html" target="_blank">Privacy Statement</a></li>
-                            <li><a href="http://www.cisco.com/web/siteassets/legal/privacy_full.html#cookies" target="_blank">Cookie Policy</a></li>
-                            <li><a href="http://www.cisco.com/web/siteassets/legal/trademark.html" target="_blank">Trademarks</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer__legal">
-                        <div class="footer__logo">
-                            <a href="http://www.cisco.com" target="_blank">
-                                <span class="icon-cisco"></span>
-                            </a>
-                        </div>
-                        <div class="footer__copyright">
-                            <div>Copyright &copy; 2018 Cisco Systems Inc.</div>
-                            <div>All rights reserved.</div>
-                        </div>
-                    </div>
-                </footer>
-            </main>
-        </div>
-    </body>
-</html>
+<script type="text/javascript">
+    function loading() {
+        $("#loading").show();
+        $("#content").hide();
+    }
+</script>
+
+
+
+<script type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', { 'packages': ['corechart'] });
+
+    // Every time the table fires the "select" event, it should call your
+    // selectHandler() function.
+    google.visualization.events.addListener(chart - options - chart0, 'select', selectHandler);
+
+    function selectHandler(e) {
+        alert('A table row was selected');
+    }
+</script>
+
+
 
 {% endblock %}

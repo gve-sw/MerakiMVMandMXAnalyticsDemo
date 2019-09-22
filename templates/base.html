@@ -48,12 +48,9 @@
 
     <title>{% block title %}{% endblock %}</title>
 
-    <!-- CUI 2.0 CSS/JS HARDCODE FOR TESTING -->
-    <link rel="stylesheet" href="../static/assets/css/cui-standard.min.css">
-    <script src="../static/assets/js/styleguide.js"></script>
 
     <!-- CUI 2.0 CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.css') }}" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.min.css') }}" >
 
   
 
@@ -191,14 +188,7 @@
                                         {% block section1content %}{% endblock %}
                                     </div>
                                 </div>
-                                <div class="panel panel--loose panel--raised">
-                                    <h2 class="subtitle">{% block section2title %}{% endblock %}</h2>
-                                    <hr>
-                                    <div class="section">
-                                        {% block section2content %}{% endblock %}
-                                    </div>
-
-                                </div>
+                          
                             </div>
 
                         </div>
@@ -233,12 +223,10 @@
 
 <!-- CUI 2.O SCRIPTS -->
 <script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
-<script src="js/styleguide.js"></script>
 <script src="{{ url_for('static', filename='assets/js/styleguide.js') }}"></script>
 
 <!-- ORIGINAL SCRIPTS -->
 
-    <script src="{{ url_for('static', filename='public/js/styleguide.js') }}"></script>
     <script src="{{ url_for('static', filename='public/js/jquery-scrollto.js') }}"></script>
     <script src="{{ url_for('static', filename='public/js/clipboard.js') }}"></script>
     <script src="{{ url_for('static', filename='public/js/featherlight.min.js') }}"></script>
