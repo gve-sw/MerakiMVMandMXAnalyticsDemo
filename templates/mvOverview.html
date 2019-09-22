@@ -6,14 +6,12 @@
 {% block pageTitle %}MV Overview{% endblock %}
 
 {% block section1title %}
-<h1>MV Overview</a></h1>
-<h2>Last 7 days</h2>
+<h2>MV Overview - Last 7 Days</h2>
 {% endblock %}
 
-
+<!--Chart-->
 {% block section1content %}
 
-<!--Chart-->
 {% set count = 0 %}
 {% for theDeviceChart in allTheCharts %}
 {{charts[theDeviceChart]}}
