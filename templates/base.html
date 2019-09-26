@@ -50,9 +50,9 @@
 
 
     <!-- CUI 2.0 CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.min.css') }}" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/cui-standard.min.css') }}">
 
-  
+
 
     <!-- ORIGINAL CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='public/css/animate.css') }}">
@@ -60,7 +60,7 @@
     <link rel="icon" href="assets/img/favicon.png" type="image/x-icon">
 
 
-    
+
     <!-- Footer CSS -->
     <style>
         .footer {
@@ -98,7 +98,7 @@
                     </a>
                 </div>
                 <div class="header-panel header-panel--right hidden-md-down">
-                    <a href="../index.html" class="header-item" title="UI Kit Home"><span class="icon-home"></span></a>
+                    <a href="/" class="header-item" title="UI Kit Home"><span class="icon-home"></span></a>
 
                 </div>
             </div>
@@ -188,7 +188,7 @@
                                         {% block section1content %}{% endblock %}
                                     </div>
                                 </div>
-                          
+
                             </div>
 
                         </div>
@@ -219,53 +219,54 @@
         </div>
     </div>
 
-<!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT -->
 
-<!-- CUI 2.O SCRIPTS -->
-<script src="https://code.jquery.com/jquery-3.0.0.min.js" integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
-<script src="{{ url_for('static', filename='assets/js/styleguide.js') }}"></script>
+    <!-- CUI 2.O SCRIPTS -->
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js"
+        integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0=" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='assets/js/styleguide.js') }}"></script>
 
-<!-- ORIGINAL SCRIPTS -->
+    <!-- ORIGINAL SCRIPTS -->
 
     <script src="{{ url_for('static', filename='public/js/jquery-scrollto.js') }}"></script>
     <script src="{{ url_for('static', filename='public/js/clipboard.js') }}"></script>
     <script src="{{ url_for('static', filename='public/js/featherlight.min.js') }}"></script>
     <script src="{{ url_for('static', filename='public/js/Markdown.Converter.js') }}"></script>
     <script type="text/javascript">
-    function downloadCSV(csv, filename) {
-    var csvFile;
-    var downloadLink;
-    // CSV file
-    csvFile = new Blob([csv], {type: "text/csv"});
-    // Download link
-    downloadLink = document.createElement("a");
-    // File name
-    downloadLink.download = filename;
-    // Create a link to the file
-    downloadLink.href = window.URL.createObjectURL(csvFile);
-    // Hide download link
-    downloadLink.style.display = "none";
-    // Add the link to DOM
-    document.body.appendChild(downloadLink);
-    // Click download link
-    downloadLink.click();
-    }
-
-    function exportTableToCSV(filename) {
-        var csv = [];
-        var rows = document.querySelectorAll("table tr");
-
-        for (var i = 0; i < rows.length; i++) {
-            var row = [], cols = rows[i].querySelectorAll("td, th");
-
-            for (var j = 0; j < cols.length; j++)
-                row.push(cols[j].innerText);
-
-            csv.push(row.join(","));
+        function downloadCSV(csv, filename) {
+            var csvFile;
+            var downloadLink;
+            // CSV file
+            csvFile = new Blob([csv], { type: "text/csv" });
+            // Download link
+            downloadLink = document.createElement("a");
+            // File name
+            downloadLink.download = filename;
+            // Create a link to the file
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            // Hide download link
+            downloadLink.style.display = "none";
+            // Add the link to DOM
+            document.body.appendChild(downloadLink);
+            // Click download link
+            downloadLink.click();
         }
-        // Download CSV file
-        downloadCSV(csv.join("\n"), filename);
-    }
+
+        function exportTableToCSV(filename) {
+            var csv = [];
+            var rows = document.querySelectorAll("table tr");
+
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll("td, th");
+
+                for (var j = 0; j < cols.length; j++)
+                    row.push(cols[j].innerText);
+
+                csv.push(row.join(","));
+            }
+            // Download CSV file
+            downloadCSV(csv.join("\n"), filename);
+        }
 
 
     </script>

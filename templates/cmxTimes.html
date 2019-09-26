@@ -20,8 +20,11 @@
                 <th>Visits</th>
                 <th>Total Time</th>
                 <th>First Seen</th>
-                <th>Last Seen</th? </tr> </thead> <tbody>
-                    {% for x in cmxData %}
+                <th>Last Seen</th?>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in cmxData %}
             <tr>
                 <td>{{ x['MAC'] }}</td>
                 <td>{{ x['visits'] }}</td>
@@ -40,7 +43,7 @@
             </tr>
             {% endfor %}
 
-            </tbody>
+        </tbody>
 
     </table>
 </div>
