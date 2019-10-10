@@ -1,10 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Error</title>
-</head>
-<body>
-Error retrieving from API
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+Error
+{% endblock %}
+
+{% block pageTitle %}
+Error
+{% endblock %}
+
+{% block section1title %}
+Error
+{% endblock %}
+
+
+{% block section1content %}
+
+<div class="row">
+<div class="col-lg-6 col-xl-4">
+        <div class="alert alert--warning-alt">
+            <div class="alert__icon icon-warning-outline"></div>
+            <div class="alert__message">Please Check Meraki IPI Configuration</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+        <div class="col-6 col-lg-2 half-margin-top half-margin-bottom">
+                <button class="btn btn--success">Configure API Settings</button>
+            </div>
+</div>
+{% endblock %}
