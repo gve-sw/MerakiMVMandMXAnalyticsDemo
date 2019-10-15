@@ -16,7 +16,10 @@ import shutil
 import json, requests
 import time
 from datetime import datetime
-from config import _FILTER_TIME, NETWORK_ID, MERAKI_API_KEY, _SESSION_TIME, timeWindow, rssiThreshold
+from config import _FILTER_TIME, _SESSION_TIME, timeWindow, rssiThreshold
+
+#import values from DB query
+from flaskApp import MERAKI_API_KEY, NETWORK_ID 
 
 # opens cmxdata and formats to show only relevant information
 # if time difference is within session time, the times are considered within the same session, if they are out, they are considered 2 different sessions
@@ -129,7 +132,7 @@ def getMVZones(serial_number):
     }
     resp = requests.request("GET", url, headers=headers)
     print("URL: ", url)
-    print("Call to MV zones response: ", resp)
+    print("Call to MV zones response: ", resp) 
     if int(resp.status_code / 100) == 2:
         return(resp.text)
     return('link error')
@@ -141,7 +144,7 @@ def getCameraScreenshot(serial_number,timestamp):
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/cameras/"+serial_number+"/snapshot"
 
  #   headers = {
- #       'X-Cisco-Meraki-API-Key': MERAKI_API_KEY,
+ #       'X-Cisco-Meraki-API-Key': api_key,
 #      "Content-Type": "application/json"
  #   }
     headers = {

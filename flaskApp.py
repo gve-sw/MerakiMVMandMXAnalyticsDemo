@@ -24,7 +24,7 @@ from datetime import datetime
 from flask_googlecharts import GoogleCharts
 from flask_googlecharts import BarChart, MaterialLineChart, ColumnChart
 from flask_googlecharts.utils import prep_data
-from config import COLLECT_CAMERAS_MVSENSE_CAPABLE, NETWORK_ID
+from config import COLLECT_CAMERAS_MVSENSE_CAPABLE
 from compute import *
 import time
 import pytz    # $ pip install pytz
@@ -40,6 +40,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 
 db = SQLAlchemy(app)
 
+
+
+
+
 #Setup Table
 class Setup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,6 +53,25 @@ class Setup(db.Model):
     validator = db.Column(db.String(50))
     ap_mac_address = db.Column(db.String(30))
     date_created = db.Column(db.DateTime, default=datetime.now)
+
+
+#query setup DB
+print('Performing Setup DB Query')
+setupEntry = Setup.query.first().__dict__
+print(setupEntry)
+MERAKI_API_KEY = ''
+#MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+NETWORK_ID = setupEntry.get('network_id')
+validator = setupEntry.get('validator')
+_APMACADDR = setupEntry.get('ap_mac_address')
+
+
+
+
+# varName = Setup.query.first()
+# if varName is not
+#print(varName)
+#api_key = ''
 
 
 #POST config data to DB
@@ -324,9 +347,13 @@ def correlation():
     return render_template("correlation.html",correlation=newData)
 
 
+# this is for the GET to show the overview
 @app.route('/',methods=['GET'])
 def index():
-    # this is for the GET to show the overview
+    
+    
+
+
     return render_template("pleasewait.html", theReason='Getting all cameras for network: ' + NETWORK_ID)
 
 
@@ -562,3 +589,7 @@ def apiSetup():
 if __name__ == "__main__":
     app.jinja_env.cache = {}
     app.run(host='0.0.0.0', port=5001, debug=True)
+   
+    
+
+

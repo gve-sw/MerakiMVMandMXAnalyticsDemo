@@ -20,9 +20,12 @@ from flask import json
 from flask import request
 import sys, getopt
 from datetime import datetime
-from config import _RSSI_THRESHOLD, _APMACADDR, validator
+from config import _RSSI_THRESHOLD
 import csv
 import shutil
+
+#import from db query
+from flaskApp import validator, _APMACADDR
 ############## USER DEFINED SETTINGS ###############
 # MERAKI SETTINGS
 secret = ""
