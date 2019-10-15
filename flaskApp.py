@@ -314,6 +314,7 @@ def mvOverview():
 
             print("getMVHistory returned:", data)
 
+            
             MVHistory = json.loads(data)
             # add a chart
 
@@ -406,6 +407,7 @@ def mvOverview():
             print("Max Entrances Timestamps: ", theHoursMaxEntrancesTimestampDict)
             print("Max Local Entrances Timestamps: ", theLocalHoursMaxEntrancesTimestampDict)
 
+            
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
             #this is to be passed to the form that will render them
             theScreenshots=[]
@@ -423,7 +425,10 @@ def mvOverview():
             # wait for the URLs to be valid
             print("Waiting 10 seconds...")
             time.sleep(10)
+        
+
             return render_template("mvHistory.html", historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
+            
     else:
 
         devices_data=getDevices()
@@ -505,6 +510,14 @@ def mvOverview():
         else:
             return render_template('error.html'), 404
 
+#API Configuration GUI
+@app.route('/setup',methods=['GET','POST'])
+def apiSetup():
+  
+    return render_template("setup.html")
+
+
 
 if __name__ == "__main__":
+    app.jinja_env.cache = {}
     app.run(host='0.0.0.0', port=5001, debug=True)
