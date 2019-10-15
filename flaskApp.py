@@ -17,6 +17,7 @@ or implied.
 
 
 from flask import Flask, render_template, request, jsonify, url_for, json
+from flask_sqlalchemy import SQLAlchemy
 import csv
 import shutil
 from datetime import datetime
@@ -32,6 +33,35 @@ import tzlocal # $ pip install tzlocal
 app = Flask(__name__)
 charts = GoogleCharts(app)
 
+#SQLAlchemy
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+
+db = SQLAlchemy(app)
+
+#Setup Table
+class Setup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    meraki_api_key = db.Column(db.String(100))
+    network_id = db.Column(db.String(50))
+    camera_serial_number = db.Column(db.String(20))
+    validator = db.Column(db.String(50))
+    ap_mac_address = db.Column(db.String(30))
+    date_created = db.Column(db.DateTime, default=datetime.now)
+
+#Populate Setup table thru URL parameters 
+#TODO: create form to input data to create URL string to pass 
+@app.route('/setup/<meraki_api_key>/<network_id>/<camera_serial_number>/<validator>/<ap_mac_address>/')
+def setup(meraki_api_key, network_id, camera_serial_number, validator, ap_mac_address):
+
+    setup = Setup(meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+    db.session.add(setup)
+    db.session.commit()
+
+    #TODO: render html form of current setup (currentsetup.html)
+    return '<h1>New Setup Info Added!</h1>'
+    
 
 @app.route('/rawCMX', methods=['GET','POST'])
 def rawCMX():
@@ -282,6 +312,7 @@ def correlation():
     print("Computing co-relation...")
     newData = getCorrelation(data,mvData)
     return render_template("correlation.html",correlation=newData)
+
 
 @app.route('/',methods=['GET'])
 def index():
