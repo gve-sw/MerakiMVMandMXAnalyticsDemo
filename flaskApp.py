@@ -50,17 +50,27 @@ class Setup(db.Model):
     ap_mac_address = db.Column(db.String(30))
     date_created = db.Column(db.DateTime, default=datetime.now)
 
-#Populate Setup table thru URL parameters 
-#TODO: create form to input data to create URL string to pass 
-@app.route('/setup/<meraki_api_key>/<network_id>/<camera_serial_number>/<validator>/<ap_mac_address>/')
-def setup(meraki_api_key, network_id, camera_serial_number, validator, ap_mac_address):
 
+#POST config data to DB
+@app.route('/commit', methods=['POST'])
+def sign_post():
+    #get data from html form via name
+    meraki_api_key = request.form.get('merakiAPIKey')
+    network_id = request.form.get('networkID')
+    camera_serial_number = request.form.get('cameraSerial')
+    validator = request.form.get('validator')
+    ap_mac_address = request.form.get('apMAC')
+
+
+    #TODO: improve logic to check for duplicates, replace line 1 and/or constrain to 1 line 
     setup = Setup(meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
     db.session.add(setup)
     db.session.commit()
 
-    #TODO: render html form of current setup (currentsetup.html)
-    return '<h1>New Setup Info Added!</h1>'
+    return render_template("setup.html")
+
+
+
     
 
 @app.route('/rawCMX', methods=['GET','POST'])
