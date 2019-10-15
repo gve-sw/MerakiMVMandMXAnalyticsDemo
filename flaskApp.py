@@ -53,7 +53,7 @@ class Setup(db.Model):
 
 #POST config data to DB
 @app.route('/commit', methods=['POST'])
-def sign_post():
+def setup_post():
     #get data from html form via name
     meraki_api_key = request.form.get('merakiAPIKey')
     network_id = request.form.get('networkID')
