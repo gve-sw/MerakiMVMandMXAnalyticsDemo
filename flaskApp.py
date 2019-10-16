@@ -81,12 +81,6 @@ def setup_post():
 
 
 
-@app.route('/success')
-def success():
-    return render_template("success.html")
-
-    
-
 @app.route('/rawCMX', methods=['GET','POST'])
 def rawCMX():
     if request.method == 'POST':
