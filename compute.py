@@ -19,8 +19,10 @@ from datetime import datetime
 from config import _FILTER_TIME, _SESSION_TIME, timeWindow, rssiThreshold
 
 #import values from DB query
-from flaskApp import MERAKI_API_KEY, NETWORK_ID 
+from flaskApp import Setup
 
+
+#MERAKI_API_KEY = test.MERAKI_API_KEY
 # opens cmxdata and formats to show only relevant information
 # if time difference is within session time, the times are considered within the same session, if they are out, they are considered 2 different sessions
 def getCMXHours(data):
@@ -90,6 +92,13 @@ def cmxFilterHours(data):
 
 # gets meraki MV video link
 def getMVLink(serial_number,timestamp):
+
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+    NETWORK_ID = setupEntry.get('network_id')
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
+
     # Get video link
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/cameras/"+str(serial_number)+"/videoLink?timestamp="+str(timestamp)
 
@@ -106,6 +115,13 @@ def getMVLink(serial_number,timestamp):
 
 # gets meraki MV activity summary overview for a camera
 def getMVOverview(serial_number):
+    
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+    NETWORK_ID = setupEntry.get('network_id')
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
+
     # Get video link
     url = "https://api.meraki.com/api/v0/devices/"+serial_number+"/camera/analytics/overview?timespan=604800"
 
@@ -123,6 +139,13 @@ def getMVOverview(serial_number):
 
 # gets meraki MV zones for a camera
 def getMVZones(serial_number):
+
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+    NETWORK_ID = setupEntry.get('network_id')
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
+
     # Get video link
     url = "https://api.meraki.com/api/v0/devices/"+serial_number+"/camera/analytics/zones"
 
@@ -140,6 +163,12 @@ def getMVZones(serial_number):
 
 # gets meraki MV activity summary overview for a camera
 def getCameraScreenshot(serial_number,timestamp):
+
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+    NETWORK_ID = setupEntry.get('network_id')
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
     # Get video link
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/cameras/"+serial_number+"/snapshot"
 
@@ -165,6 +194,13 @@ def getCameraScreenshot(serial_number,timestamp):
 
 # gets meraki MV history summary overview for a camera
 def getMVHistory(serial_number, zone):
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    print(setupEntry)
+    MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+    NETWORK_ID = setupEntry.get('network_id')
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
+
     # Get video link
     url = "https://api.meraki.com/api/v0/devices/"+serial_number+"/camera/analytics/zones/"+zone+"/history?timespan=50400"
 
@@ -181,6 +217,13 @@ def getMVHistory(serial_number, zone):
 
 # gets meraki devices
 def getDevices():
+
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+    NETWORK_ID = setupEntry.get('network_id')
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
+
     # Get video link
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/devices/"
 

@@ -16,7 +16,7 @@ or implied.
 # web application GUI
 
 
-from flask import Flask, render_template, request, jsonify, url_for, json
+from flask import Flask, render_template, request, jsonify, url_for, json, redirect
 from flask_sqlalchemy import SQLAlchemy
 import csv
 import shutil
@@ -41,9 +41,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 db = SQLAlchemy(app)
 
 
-
-
-
 #Setup Table
 class Setup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,24 +51,14 @@ class Setup(db.Model):
     ap_mac_address = db.Column(db.String(30))
     date_created = db.Column(db.DateTime, default=datetime.now)
 
-
 #query setup DB
-print('Performing Setup DB Query')
-setupEntry = Setup.query.first().__dict__
+print('Performing Initial Setup')
+setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
 print(setupEntry)
-MERAKI_API_KEY = ''
-#MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+MERAKI_API_KEY = setupEntry.get('meraki_api_key')
 NETWORK_ID = setupEntry.get('network_id')
 validator = setupEntry.get('validator')
 _APMACADDR = setupEntry.get('ap_mac_address')
-
-
-
-
-# varName = Setup.query.first()
-# if varName is not
-#print(varName)
-#api_key = ''
 
 
 #POST config data to DB
@@ -84,15 +71,19 @@ def setup_post():
     validator = request.form.get('validator')
     ap_mac_address = request.form.get('apMAC')
 
-
-    #TODO: improve logic to check for duplicates, replace line 1 and/or constrain to 1 line 
+    #update DB with form input
     setup = Setup(meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
     db.session.add(setup)
     db.session.commit()
 
-    return render_template("setup.html")
+    
+    return render_template("success.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
 
 
+
+@app.route('/success')
+def success():
+    return render_template("success.html")
 
     
 
@@ -359,6 +350,7 @@ def index():
 
 @app.route('/mvOverview',methods=['GET','POST'])
 def mvOverview():
+    
     # extract MVSense over view data for a camera from the analytics API
     MVZones = []
     animation_option = {"startup": True, "duration": 1000, "easing": 'out'}
@@ -586,9 +578,13 @@ def apiSetup():
 
 
 
+
+
 if __name__ == "__main__":
+    
     app.jinja_env.cache = {}
     app.run(host='0.0.0.0', port=5001, debug=True)
+    
    
     
 

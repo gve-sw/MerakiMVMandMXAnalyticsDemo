@@ -25,7 +25,14 @@ import csv
 import shutil
 
 #import from db query
-from flaskApp import validator, _APMACADDR
+#from flaskApp import validator, _APMACADDR
+#from flaskApp import queryDB
+from flaskApp import Setup
+
+setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+validator = setupEntry.get('validator')
+_APMACADDR = setupEntry.get('ap_mac_address')
+
 ############## USER DEFINED SETTINGS ###############
 # MERAKI SETTINGS
 secret = ""
@@ -74,6 +81,11 @@ def updateData(data):
 
 # Save CMX Data for Recepcion
 def save_data(data):
+
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
+
     # CHANGE ME - send 'data' to a database or storage system
     # pprint(data, indent=1)
     if data['data']['apMac']== _APMACADDR:
@@ -92,6 +104,8 @@ app = Flask(__name__)
 # Respond to Meraki with validator
 @app.route('/', methods=['GET'])
 def get_validator():
+
+
     print("validator sent to: ",request.environ['REMOTE_ADDR'])
     return validator
 
@@ -140,6 +154,10 @@ def get_cmxJSON():
 
 # Launch application with supplied arguments
 def main(argv):
+
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    validator = setupEntry.get('validator')
+    _APMACADDR = setupEntry.get('ap_mac_address')
     global validator
     global secret
 
