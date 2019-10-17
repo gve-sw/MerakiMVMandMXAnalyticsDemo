@@ -28,6 +28,9 @@ from compute import *
 import time
 import pytz    # $ pip install pytz
 import tzlocal # $ pip install tzlocal
+import requests
+
+
 
 app = Flask(__name__)
 charts = GoogleCharts(app)
@@ -409,7 +412,7 @@ def mvOverview():
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
             #this is to be passed to the form that will render them
             theScreenshots=[]
-
+            urlList = []
             for dTimeStampKey in theHoursMaxEntrancesTimestampDict.keys():
                 if theHoursMaxEntrancesTimestampDict[dTimeStampKey]!='':
                     screenShotURLdata=getCameraScreenshot(theSERIAL,theHoursMaxEntrancesTimestampDict[dTimeStampKey])
@@ -420,10 +423,27 @@ def mvOverview():
                         #to show a local timestamp we calculated in a previous loop
                         theScreenshots.append([ theLocalHoursMaxEntrancesTimestampDict[dTimeStampKey], screenShotURL["url"]])
 
-            # wait for the URLs to be valid
-            print("Waiting 10 seconds...")
-            time.sleep(10)
+                        
+                        urlList.append(screenShotURL['url'])
+
+            #GET request img urls to ensure img delivery           
+            for x in urlList:
+                status = True
+                while status:
+                    res = requests.get(x)
+                    if (res.status_code != 200):
+                        #check the the status and assign to offense_response.status_code
+                        print("Status code is not 200, retrying request")
+                        time.sleep(1)
+                    else:
+                        print("status code is 200, hence exiting")
+                        status = False
+         
+            
             return render_template("mvHistory.html", historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
+            
+           
+            
     else:
 
         devices_data=getDevices()
@@ -506,5 +526,8 @@ def mvOverview():
             return render_template('error.html'), 404
 
 
+
+
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)

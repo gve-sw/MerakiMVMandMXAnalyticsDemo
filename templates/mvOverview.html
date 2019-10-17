@@ -5,27 +5,63 @@
 
 {% block pageTitle %}MV Overview{% endblock %}
 
+{% block css %}
+
+
+<style>
+    #loadingDiv {
+        display: none;
+    }
+
+    .wheel {
+        margin-left: 10px;
+    }
+</style>
+{% endblock %}
+
 {% block section1title %}
 <h2>MV Overview - Last 7 Days</h2>
 {% endblock %}
 
+
+
 <!--Chart-->
 {% block section1content %}
+
 
 {% set count = 0 %}
 {% for theDeviceChart in allTheCharts %}
 {{charts[theDeviceChart]}}
 
 
-
 {% for theDeviceZoneDetails in allTheDetails[count][2] %}
 <div class='col-xs-12 col-md-2'>
     <form action="{{ url_for('mvOverview') }}" method="post">
-        <button class="btn btn--primary" type="submit" name="zone_details"
-            value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}"
-            onclick="loading();">{{theDeviceZoneDetails[1]}} details</button>
+        <button class="btn btn--primary" type="submit" name="zone_details" onclick="showDiv()"
+            value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}">{{theDeviceZoneDetails[1]}}
+            details</button>
     </form>
 </div>
+
+
+
+<div id="loadingDiv" class=row>
+
+
+
+    <div class="alert alert--info">
+        <div class="alert__icon icon-info-outline"></div>
+        <div class="alert__message">Loading {{theDeviceZoneDetails[1]}} details</div>
+        <div class="loader loader--small" aria-label="Loading, please wait...">
+            <div class="wrapper">
+                <div class="wheel"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
 {% endfor %}
 
 
@@ -49,9 +85,9 @@
 
 
 <script type="text/javascript">
-    function loading() {
-        $("#loading").show();
-        $("#content").hide();
+
+    function showDiv() {
+        document.getElementById('loadingDiv').style.display = "block";
     }
 </script>
 
@@ -69,7 +105,6 @@
         alert('A table row was selected');
     }
 </script>
-
 
 
 {% endblock %}
