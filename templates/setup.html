@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Setup{% endblock %}
+
+{% block pageTitle %}Setup{% endblock %}
+
+{% block section1title %}<h2>Setup</h2>{% endblock %}
+
+
+{% block section1content %}
+
+<form class="form-signin" method="POST" action="{{ url_for('setup_post')}}">
+    <div class="form-group">
+      <label for="inputMerakiAPIKey" class="sr-only">Meraki API Key</label>
+      <input type="text" id="inputMerakiAPIKey" name="merakiAPIKey" class="form-control" placeholder="Meraki API Key" required autofocus>
+    </div>
+
+    <div class="form-group">
+        <label for="inputNetworkID" class="sr-only">Network ID</label>
+        <input type="text" id="inputNetworkID" name="networkID" class="form-control" placeholder="Network ID" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="inputCameraSerial" class="sr-only">Camera Serial #</label>
+        <input type="text" id="inputCameraSerial" name="cameraSerial" class="form-control" placeholder="Camera Serial #" required autofocus>
+      </div>
+
+
+      <div class="form-group">
+        <label for="inputValidator" class="sr-only">Validator</label>
+        <input type="text" id="inputValidator" name="validator" class="form-control" placeholder="Validator" required autofocus>
+      </div>
+
+
+      <div class="form-group">
+        <label for="inputAPMAC" class="sr-only">AP MAC Address</label>
+        <input type="text" id="inputAPMAC" name="apMAC" class="form-control" placeholder="AP MAC Address" required autofocus>
+      </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Done</button>
+  </form>
+
+{% endblock %}
