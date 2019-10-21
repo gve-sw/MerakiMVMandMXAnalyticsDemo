@@ -592,19 +592,7 @@ def apiSetup():
     return render_template("setup.html")
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
-
-    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True
+    
     app.jinja_env.cache = {}
- 
-    
-   
-    
-
-
+    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)
