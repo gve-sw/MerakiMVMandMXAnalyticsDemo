@@ -83,6 +83,28 @@ def setup_post():
     return render_template("success.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
 
 
+@app.route('/currentconfig', methods=['GET'])
+def current_config():
+
+
+    #query setup DB
+    print('Performing Initial Setup')
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    print(setupEntry)
+    meraki_api_key = setupEntry.get('meraki_api_key')
+    network_id = setupEntry.get('network_id')
+    camera_serial_number = setupEntry.get('camera_serial_number')
+    validator = setupEntry.get('validator')
+    ap_mac_address = setupEntry.get('ap_mac_address')
+
+
+
+
+
+    
+    return render_template("currentConfig.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+
+
 
 @app.route('/rawCMX', methods=['GET','POST'])
 def rawCMX():
