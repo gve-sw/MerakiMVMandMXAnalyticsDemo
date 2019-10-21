@@ -16,14 +16,15 @@ or implied.
 # web application GUI
 
 
-from flask import Flask, render_template, request, jsonify, url_for, json
+from flask import Flask, render_template, request, jsonify, url_for, json, redirect
+from flask_sqlalchemy import SQLAlchemy
 import csv
 import shutil
 from datetime import datetime
 from flask_googlecharts import GoogleCharts
 from flask_googlecharts import BarChart, MaterialLineChart, ColumnChart
 from flask_googlecharts.utils import prep_data
-from config import COLLECT_CAMERAS_MVSENSE_CAPABLE, NETWORK_ID
+from config import COLLECT_CAMERAS_MVSENSE_CAPABLE
 from compute import *
 import time
 import pytz    # $ pip install pytz
@@ -34,6 +35,53 @@ import requests
 
 app = Flask(__name__)
 charts = GoogleCharts(app)
+
+#SQLAlchemy
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+
+db = SQLAlchemy(app)
+
+
+#Setup Table
+class Setup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    meraki_api_key = db.Column(db.String(100))
+    network_id = db.Column(db.String(50))
+    camera_serial_number = db.Column(db.String(20))
+    validator = db.Column(db.String(50))
+    ap_mac_address = db.Column(db.String(30))
+    date_created = db.Column(db.DateTime, default=datetime.now)
+
+#query setup DB
+print('Performing Initial Setup')
+setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+print(setupEntry)
+MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+NETWORK_ID = setupEntry.get('network_id')
+validator = setupEntry.get('validator')
+_APMACADDR = setupEntry.get('ap_mac_address')
+
+
+#POST config data to DB
+@app.route('/commit', methods=['POST'])
+def setup_post():
+    #get data from html form via name
+    meraki_api_key = request.form.get('merakiAPIKey')
+    network_id = request.form.get('networkID')
+    camera_serial_number = request.form.get('cameraSerial')
+    validator = request.form.get('validator')
+    ap_mac_address = request.form.get('apMAC')
+
+    #update DB with form input
+    setup = Setup(meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+    db.session.add(setup)
+    db.session.commit()
+
+    
+    return render_template("success.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+
 
 
 @app.route('/rawCMX', methods=['GET','POST'])
@@ -286,14 +334,20 @@ def correlation():
     newData = getCorrelation(data,mvData)
     return render_template("correlation.html",correlation=newData)
 
+
+# this is for the GET to show the overview
 @app.route('/',methods=['GET'])
 def index():
-    # this is for the GET to show the overview
+    
+    
+
+
     return render_template("pleasewait.html", theReason='Getting all cameras for network: ' + NETWORK_ID)
 
 
 @app.route('/mvOverview',methods=['GET','POST'])
 def mvOverview():
+    
     # extract MVSense over view data for a camera from the analytics API
     MVZones = []
     animation_option = {"startup": True, "duration": 1000, "easing": 'out'}
@@ -317,6 +371,7 @@ def mvOverview():
 
             print("getMVHistory returned:", data)
 
+            
             MVHistory = json.loads(data)
             # add a chart
 
@@ -409,6 +464,7 @@ def mvOverview():
             print("Max Entrances Timestamps: ", theHoursMaxEntrancesTimestampDict)
             print("Max Local Entrances Timestamps: ", theLocalHoursMaxEntrancesTimestampDict)
 
+            
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
             #this is to be passed to the form that will render them
             theScreenshots=[]
@@ -422,6 +478,7 @@ def mvOverview():
                         #Passing theLocalHoursMaxEntrancesTimestampDict[dTimeStampKey] instead of theHoursMaxEntrancesTimestampDict[dTimeStampKey] below
                         #to show a local timestamp we calculated in a previous loop
                         theScreenshots.append([ theLocalHoursMaxEntrancesTimestampDict[dTimeStampKey], screenShotURL["url"]])
+
 
                         
                         urlList.append(screenShotURL['url'])
@@ -444,6 +501,9 @@ def mvOverview():
             
            
             
+
+         
+
     else:
 
         devices_data=getDevices()
@@ -525,9 +585,26 @@ def mvOverview():
         else:
             return render_template('error.html'), 404
 
+#API Configuration GUI
+@app.route('/setup',methods=['GET','POST'])
+def apiSetup():
+  
+    return render_template("setup.html")
+
+
+
+
 
 
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)
+
+    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True
+    app.jinja_env.cache = {}
+ 
+    
+   
+    
+
+
