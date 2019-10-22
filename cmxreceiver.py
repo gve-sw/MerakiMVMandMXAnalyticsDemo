@@ -25,10 +25,7 @@ import csv
 import shutil
 
 #import from db query
-#from flaskApp import validator, _APMACADDR
-#from flaskApp import queryDB
 from flaskApp import Setup
-
 setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
 validator = setupEntry.get('validator')
 _APMACADDR = setupEntry.get('ap_mac_address')
@@ -81,7 +78,7 @@ def updateData(data):
 
 # Save CMX Data for Recepcion
 def save_data(data):
-
+    from flaskApp import Setup
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     validator = setupEntry.get('validator')
     _APMACADDR = setupEntry.get('ap_mac_address')
@@ -154,12 +151,14 @@ def get_cmxJSON():
 
 # Launch application with supplied arguments
 def main(argv):
-
+    from flaskApp import Setup
+    global validator
+    global secret
+    
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     validator = setupEntry.get('validator')
     _APMACADDR = setupEntry.get('ap_mac_address')
-    global validator
-    global secret
+    
 
     try:
        opts, args = getopt.getopt(argv,"hv:s:",["validator=","secret="])

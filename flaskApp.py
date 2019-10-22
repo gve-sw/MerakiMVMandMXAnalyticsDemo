@@ -44,6 +44,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 db = SQLAlchemy(app)
 
 
+
 #Setup Table
 class Setup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
