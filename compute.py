@@ -16,10 +16,11 @@ import shutil
 import json, requests
 import time
 from datetime import datetime
+
 from config import _FILTER_TIME, _SESSION_TIME, timeWindow, rssiThreshold
 
 #import values from DB query
-from flaskApp import Setup
+
 
 
 #MERAKI_API_KEY = test.MERAKI_API_KEY
@@ -92,6 +93,7 @@ def cmxFilterHours(data):
 
 # gets meraki MV video link
 def getMVLink(serial_number,timestamp):
+    from flaskApp import Setup
 
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
@@ -115,6 +117,7 @@ def getMVLink(serial_number,timestamp):
 
 # gets meraki MV activity summary overview for a camera
 def getMVOverview(serial_number):
+    from flaskApp import Setup
     
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
@@ -139,7 +142,7 @@ def getMVOverview(serial_number):
 
 # gets meraki MV zones for a camera
 def getMVZones(serial_number):
-
+    from flaskApp import Setup
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
     NETWORK_ID = setupEntry.get('network_id')
@@ -163,7 +166,7 @@ def getMVZones(serial_number):
 
 # gets meraki MV activity summary overview for a camera
 def getCameraScreenshot(serial_number,timestamp):
-
+    from flaskApp import Setup
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
     NETWORK_ID = setupEntry.get('network_id')
@@ -194,6 +197,7 @@ def getCameraScreenshot(serial_number,timestamp):
 
 # gets meraki MV history summary overview for a camera
 def getMVHistory(serial_number, zone):
+    from flaskApp import Setup
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     print(setupEntry)
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
@@ -217,7 +221,7 @@ def getMVHistory(serial_number, zone):
 
 # gets meraki devices
 def getDevices():
-
+    from flaskApp import Setup
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
     NETWORK_ID = setupEntry.get('network_id')

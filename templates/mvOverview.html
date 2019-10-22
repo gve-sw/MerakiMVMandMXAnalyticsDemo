@@ -39,7 +39,7 @@
     <form action="{{ url_for('mvOverview') }}" method="post">
         <button class="btn btn--primary" type="submit" name="zone_details" onclick="showDiv()"
             value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}">{{theDeviceZoneDetails[1]}}
-            details</button>
+            details</button><br><br>
     </form>
 </div>
 
@@ -51,7 +51,7 @@
 
     <div class="alert alert--info">
         <div class="alert__icon icon-info-outline"></div>
-        <div class="alert__message">Loading {{theDeviceZoneDetails[1]}} details</div>
+        <div class="alert__message">Loading {{theDeviceZoneDetails[1]}} details {{feedbackMsg}}</div>
         <div class="loader loader--small" aria-label="Loading, please wait...">
             <div class="wrapper">
                 <div class="wheel"></div>
