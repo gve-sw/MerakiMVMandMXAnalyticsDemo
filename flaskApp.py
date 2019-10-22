@@ -514,7 +514,7 @@ def mvOverview():
                     if (res.status_code != 200):
                         #check the the status and assign to offense_response.status_code
                         print("Status code is not 200, retrying request")
-                        time.sleep(1)
+                    
                     else:
                         print("status code is 200, hence exiting")
                         status = False
