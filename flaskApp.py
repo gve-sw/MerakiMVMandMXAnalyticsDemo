@@ -55,6 +55,21 @@ class Setup(db.Model):
     ap_mac_address = db.Column(db.String(30))
     date_created = db.Column(db.DateTime, default=datetime.now)
 
+#cmxData Table
+class cmxDataTbl(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    mac = db.Column(db.String(20))
+    time = db.Column(db.String(10))
+    rssi = db.Column(db.String(5))
+
+#mvData Table
+class mvDataTbl(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timeIn = db.Column(db.String(10))
+    timeOut = db.Column(db.String(10))
+    count = db.Column(db.String(5))
+
+
 #query setup DB
 print('Performing Initial Setup')
 setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
