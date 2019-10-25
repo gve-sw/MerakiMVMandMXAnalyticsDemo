@@ -78,6 +78,7 @@ MERAKI_API_KEY = setupEntry.get('meraki_api_key')
 NETWORK_ID = setupEntry.get('network_id')
 validator = setupEntry.get('validator')
 _APMACADDR = setupEntry.get('ap_mac_address')
+camera_serial_number = setupEntry.get('camera_serial_number')
 
 
 #POST config data to DB
@@ -124,67 +125,80 @@ def current_config():
 
 @app.route('/rawCMX', methods=['GET','POST'])
 def rawCMX():
+
+
     if request.method == 'POST':
         select = flask.request.form.get('select')
         if select == 'cmxTimes':
             return cmxTimes()
-    # open cmx data
+
+   
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']}]})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']}]})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'].append({'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']})
+    #query cmx_data_tbl
+    reader = cmxDataTbl.query.all()
+
+    count = 0
+    arrayCount=0
+    flag=0
+    
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':[{'ts':datetime.fromtimestamp(float(row.time)).strftime('%m-%d,%H:%M'),'rssi':row.rssi}]})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':[{'ts':datetime.fromtimestamp(float(row.time)).strftime('%m-%d,%H:%M'),'rssi':row.rssi}]})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'].append({'ts':datetime.fromtimestamp(float(row.time)).strftime('%m-%d,%H:%M'),'rssi':row.rssi})
+
     return render_template("rawCMX.html",data=data)
 
 @app.route('/cmxTimes', methods=['GET','POST'])
 def cmxTimes():
 
 #testing graphs with chart.js
-
+    
     # open cmx data
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'][count]=row['time']
-    # print(len(data[0]['timestamps']))
+    reader = cmxDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        print(row.mac)
+        print(row.time)
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'][count]=row.time
+# print(len(data[0]['timestamps']))
+
+    print(data)
+
     cmxData=getCMXHours(data)
+
     for x in cmxData:
         for y in range(len(x['timeData'])):
             x['timeData'][y]['firstSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['firstSeen'])).strftime('%m-%d,%H:%M')
             x['timeData'][y]['lastSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['lastSeen'])).strftime('%m-%d,%H:%M')
 
 
-    labels = ["January", "February", "March", "April", "May", "June", "July", "August"]
-    values = [10, 9, 8, 7, 6, 4, 7, 8]
+    #labels = ["January", "February", "March", "April", "May", "June", "July", "August"]
+    #values = [10, 9, 8, 7, 6, 4, 7, 8]
+    #return render_template("cmxTimes.html",cmxData=cmxData, cmxvalues=values, cmxlabels=labels)
 
-    return render_template("cmxTimes.html",cmxData=cmxData, cmxvalues=values, cmxlabels=labels)
+    return render_template("cmxTimes.html",cmxData=cmxData)
+
 
 @app.route("/testchartdata")
 def testchartdata():
@@ -201,6 +215,8 @@ def testchartdata():
 
 @app.route('/hourFilter', methods=['GET','POST'])
 def hourFilter():
+
+    '''
     # testing graphs with Google Charts
     animation_option={ "startup" : True, "duration": 1000, "easing":'out'}
 
@@ -228,28 +244,29 @@ def hourFilter():
 
     charts.register(spectators_chart)
 
-
+    '''
 
     # open cmx data
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'][count]=row['time']
-    # print(len(data[0]['timestamps']))
+    reader = cmxDataTbl.query.all()
+
+   
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'][count]=row.time
+# print(len(data[0]['timestamps']))
     cmxData=cmxFilterHours(data)
     for x in cmxData:
         for y in range(len(x['timeData'])):
@@ -264,41 +281,40 @@ def hourFilter():
 def mvSense():
     # open mv sense data
     data = []
-    with open('mvData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            print(row['Time In'])
-            link = getMVLink('Q2EV-2QFS-YRYE',row['Time In'])
-            link = link.replace('{"url":"',"")
-            link = link.replace('"}',"")
-            data.append({'timeIn':datetime.fromtimestamp(float(row['Time In'])/1000).strftime('%m-%d,%H:%M'),'timeOut':datetime.fromtimestamp(float(row['Time Out'])/1000).strftime('%m-%d,%H:%M'),'count':row['Count'],'link':link})
-    # print(len(data[0]['timestamps']))
+    reader = mvDataTbl.query.all()
+
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        print(row.timeIn)
+        link = getMVLink(camera_serial_number,row.timeIn) 
+        link = link.replace('{"url":"',"")
+        link = link.replace('"}',"")
+        data.append({'timeIn':datetime.fromtimestamp(float(row.timeIn)/1000).strftime('%m-%d,%H:%M'),'timeOut':datetime.fromtimestamp(float(row.timeOut)/1000).strftime('%m-%d,%H:%M'),'count':row.count,'link':link})
+# print(len(data[0]['timestamps']))
     return render_template("mvSense.html",data=data)
 
 @app.route('/cmxActivity',methods=['GET','POST'])
 def cmxActivity():
     # open cmx data
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'][count]=row['time']
+    reader = cmxDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'][count]=row.time
     newData = computeCMXActivity(data)
 
     #add a chart
@@ -325,13 +341,12 @@ def cmxActivity():
 def mvActivity():
     # open mv sense data
     data = []
-    with open('mvData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            data.append({'timeIn':row['Time In'],'timeOut':row['Time Out'],'count':row['Count']})
+    reader = mvDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        data.append({'timeIn':row.timeIn,'timeOut':row.timeOut,'count':row.count})
     newData = computeMVActivity(data)
     # print(len(data[0]['timestamps']))
     return render_template("mvActivity.html",x=newData)
@@ -341,33 +356,32 @@ def correlation():
     # open cmx data
     data = []
     print("Reading CMX Data...")
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':row['time'],'rssi':row['rssi']}]})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':row['time'],'rssi':row['rssi']}]})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'].append({'ts':row['time'],'rssi':row['rssi']})
+    reader = cmxDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':[{'ts':row.time,'rssi':row.rssi}]})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':[{'ts':row.time,'rssi':row.rssi}]})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'].append({'ts':row.time,'rssi':row.rssi})
+
     # open mv sense data
     print("Reading MVSense Data...")
     mvData = []
-    with open('mvData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            mvData.append({'timeIn':row['Time In'],'timeOut':row['Time Out'],'count':row['Count']})
+    reader = mvDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        mvData.append({'timeIn':row.timeIn,'timeOut':row.timeOut,'count':row.count})
     print("Computing co-relation...")
     newData = getCorrelation(data,mvData)
     return render_template("correlation.html",correlation=newData)
