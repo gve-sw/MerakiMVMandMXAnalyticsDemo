@@ -193,10 +193,12 @@ def cmxTimes():
             x['timeData'][y]['lastSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['lastSeen'])).strftime('%m-%d,%H:%M')
 
 
-    labels = ["January", "February", "March", "April", "May", "June", "July", "August"]
-    values = [10, 9, 8, 7, 6, 4, 7, 8]
-    
-    return render_template("cmxTimes.html",cmxData=cmxData, cmxvalues=values, cmxlabels=labels)
+    #labels = ["January", "February", "March", "April", "May", "June", "July", "August"]
+    #values = [10, 9, 8, 7, 6, 4, 7, 8]
+    #return render_template("cmxTimes.html",cmxData=cmxData, cmxvalues=values, cmxlabels=labels)
+
+    return render_template("cmxTimes.html",cmxData=cmxData)
+
 
 @app.route("/testchartdata")
 def testchartdata():
