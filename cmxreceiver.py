@@ -20,20 +20,17 @@ from flask import json
 from flask import request
 import sys, getopt
 from datetime import datetime
+from flaskApp import _APMACADDR, validator
 from config import _RSSI_THRESHOLD
 import csv
 import shutil
-
-#import from db query
-from flaskApp import Setup
-setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
-validator = setupEntry.get('validator')
-_APMACADDR = setupEntry.get('ap_mac_address')
-
 ############## USER DEFINED SETTINGS ###############
 # MERAKI SETTINGS
 secret = ""
 version = "2.0" # This code was written to support the CMX JSON version specified
+
+print("AP MAC Address: " + _APMACADDR)
+print("Validator: " + validator)
 
 # Parse CMX data
 def matchMAC(cmx, mac):
@@ -78,11 +75,6 @@ def updateData(data):
 
 # Save CMX Data for Recepcion
 def save_data(data):
-    from flaskApp import Setup
-    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
-
     # CHANGE ME - send 'data' to a database or storage system
     # pprint(data, indent=1)
     if data['data']['apMac']== _APMACADDR:
@@ -101,8 +93,6 @@ app = Flask(__name__)
 # Respond to Meraki with validator
 @app.route('/', methods=['GET'])
 def get_validator():
-
-
     print("validator sent to: ",request.environ['REMOTE_ADDR'])
     return validator
 
@@ -151,14 +141,8 @@ def get_cmxJSON():
 
 # Launch application with supplied arguments
 def main(argv):
-    from flaskApp import Setup
     global validator
     global secret
-    
-    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
-    
 
     try:
        opts, args = getopt.getopt(argv,"hv:s:",["validator=","secret="])
