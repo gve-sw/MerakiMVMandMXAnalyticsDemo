@@ -20,10 +20,11 @@ from flask import json
 from flask import request
 import sys, getopt
 from datetime import datetime
-from flaskApp import _APMACADDR, validator
+from flaskApp import _APMACADDR, validator, db, cmxDataTbl
 from config import _RSSI_THRESHOLD
 import csv
 import shutil
+from flask_sqlalchemy import SQLAlchemy
 ############## USER DEFINED SETTINGS ###############
 # MERAKI SETTINGS
 secret = ""
@@ -71,7 +72,21 @@ def updateData(data):
             writer.writerow({'MAC':data['clientMac'],'time':data['seenEpoch'],'rssi':data['rssi']})
     shutil.move('db.csv.temp','cmxData.csv')
 
+    
+    #CSV to Database
+    
+    #clear database table
+    print('clearing cmxDataTbl')
+    db.session.query(cmxDataTbl).delete()
+    db.session.commit()
+   
 
+    with open('cmxData.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            cmxWrite = cmxDataTbl(mac=row[0], time=row[1], rssi=row[2])
+            db.session.add(cmxWrite)
+    db.session.commit()
 
 # Save CMX Data for Recepcion
 def save_data(data):
@@ -89,6 +104,9 @@ def save_data(data):
 
 ####################################################
 app = Flask(__name__)
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 
 # Respond to Meraki with validator
 @app.route('/', methods=['GET'])
@@ -162,5 +180,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
+    from flaskApp import db
     main(sys.argv[1:])
+    db.init_app(app)
     app.run(port=5000,debug=False)
