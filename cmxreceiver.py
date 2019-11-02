@@ -51,8 +51,10 @@ def matchMAC(cmx, mac):
     sent_notification('client not found')
     return
 
-# writes data to a .csv file
+
 def updateData(data):
+
+    # use CSV to format data prior to pushing to database 
     with open('cmxData.csv','r') as csvfile, open('db.csv.temp','w',newline='') as temp:
         foundFlag = 0
         reader = csv.DictReader(csvfile)
@@ -73,20 +75,18 @@ def updateData(data):
     shutil.move('db.csv.temp','cmxData.csv')
 
     
-    #CSV to Database
-    
     #clear database table
-    print('clearing cmxDataTbl')
     db.session.query(cmxDataTbl).delete()
     db.session.commit()
    
-
+    #CSV to Database
     with open('cmxData.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
             cmxWrite = cmxDataTbl(mac=row[0], time=row[1], rssi=row[2])
             db.session.add(cmxWrite)
     db.session.commit()
+
 
 # Save CMX Data for Recepcion
 def save_data(data):
