@@ -17,8 +17,18 @@ import json, requests
 import time
 import paho.mqtt.client as mqtt
 import csv
-from config import MQTT_SERVER,MQTT_PORT,MQTT_TOPIC,MERAKI_API_KEY,NETWORK_ID,COLLECT_CAMERAS_SERIAL_NUMBERS,COLLECT_ZONE_IDS,MOTION_ALERT_PEOPLE_COUNT_THRESHOLD,MOTION_ALERT_ITERATE_COUNT,MOTION_ALERT_TRIGGER_PEOPLE_COUNT,MOTION_ALERT_PAUSE_TIME,TIMEOUT
-from flaskApp import Setup
+
+#from config import MQTT_SERVER,MQTT_PORT,MQTT_TOPIC,MERAKI_API_KEY,NETWORK_ID,COLLECT_CAMERAS_SERIAL_NUMBERS,COLLECT_ZONE_IDS,MOTION_ALERT_PEOPLE_COUNT_THRESHOLD,MOTION_ALERT_ITERATE_COUNT,MOTION_ALERT_TRIGGER_PEOPLE_COUNT,MOTION_ALERT_PAUSE_TIME,TIMEOUT
+from config import MQTT_SERVER,MQTT_PORT,MQTT_TOPIC, COLLECT_ZONE_IDS,MOTION_ALERT_PEOPLE_COUNT_THRESHOLD,MOTION_ALERT_ITERATE_COUNT,MOTION_ALERT_TRIGGER_PEOPLE_COUNT,MOTION_ALERT_PAUSE_TIME,TIMEOUT
+from flaskApp import MERAKI_API_KEY, NETWORK_ID, camera_serial_number, db, mvDataTbl
+
+
+COLLECT_CAMERAS_SERIAL_NUMBERS = []
+COLLECT_CAMERAS_SERIAL_NUMBERS.append(camera_serial_number)
+
+print(MERAKI_API_KEY)
+print(NETWORK_ID)
+print(COLLECT_CAMERAS_SERIAL_NUMBERS)
 
 _MONITORING_TRIGGERED = False
 
@@ -103,6 +113,7 @@ def collect_zone_information(topic, payload):
     if payload['counts']['person'] >= MOTION_ALERT_PEOPLE_COUNT_THRESHOLD:
         _MONITORING_TRIGGERED = True
         _TIMESTAMP = payload['ts']
+        print('.')
     print("payload "+serial_number+": " + str(payload) +
           ", _MONITORING_TRIGGERED : " + str(_MONITORING_TRIGGERED) +
           ", _MONITORING_MESSAGE_COUNT : " + str(_MONITORING_MESSAGE_COUNT) +
@@ -116,6 +127,12 @@ def notify(serial_number,count,timestampIN, timestampOUT):
         writer=csv.DictWriter(csvfile,fieldnames=fieldnames)
         writer.writerow({'Time In':timestampIN,'Time Out':timestampOUT, 'Count':count})
 
+    #write rows to DB
+    print('writing data to mv_data_tbl')
+    mvDataWrite = mvDataTbl(timeIn=timestampIN, timeOut=timestampOUT, count=count)
+    db.session.add(mvDataWrite)
+    db.session.commit()
+    print('data committed to mv_data_tbl')
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))

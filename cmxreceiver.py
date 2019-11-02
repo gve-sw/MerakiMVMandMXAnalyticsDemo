@@ -20,20 +20,18 @@ from flask import json
 from flask import request
 import sys, getopt
 from datetime import datetime
+from flaskApp import _APMACADDR, validator, db, cmxDataTbl
 from config import _RSSI_THRESHOLD
 import csv
 import shutil
-
-#import from db query
-from flaskApp import Setup
-setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
-validator = setupEntry.get('validator')
-_APMACADDR = setupEntry.get('ap_mac_address')
-
+from flask_sqlalchemy import SQLAlchemy
 ############## USER DEFINED SETTINGS ###############
 # MERAKI SETTINGS
 secret = ""
 version = "2.0" # This code was written to support the CMX JSON version specified
+
+print("AP MAC Address: " + _APMACADDR)
+print("Validator: " + validator)
 
 # Parse CMX data
 def matchMAC(cmx, mac):
@@ -53,8 +51,10 @@ def matchMAC(cmx, mac):
     sent_notification('client not found')
     return
 
-# writes data to a .csv file
+
 def updateData(data):
+
+    # use CSV to format data prior to pushing to database 
     with open('cmxData.csv','r') as csvfile, open('db.csv.temp','w',newline='') as temp:
         foundFlag = 0
         reader = csv.DictReader(csvfile)
@@ -74,15 +74,23 @@ def updateData(data):
             writer.writerow({'MAC':data['clientMac'],'time':data['seenEpoch'],'rssi':data['rssi']})
     shutil.move('db.csv.temp','cmxData.csv')
 
+    
+    #clear database table
+    db.session.query(cmxDataTbl).delete()
+    db.session.commit()
+   
+    #CSV to Database
+    with open('cmxData.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        next(readCSV)
+        for row in readCSV:
+            cmxWrite = cmxDataTbl(mac=row[0], time=row[1], rssi=row[2])
+            db.session.add(cmxWrite)
+    db.session.commit()
 
 
 # Save CMX Data for Recepcion
 def save_data(data):
-    from flaskApp import Setup
-    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
-
     # CHANGE ME - send 'data' to a database or storage system
     # pprint(data, indent=1)
     if data['data']['apMac']== _APMACADDR:
@@ -98,11 +106,12 @@ def save_data(data):
 ####################################################
 app = Flask(__name__)
 
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+
 # Respond to Meraki with validator
 @app.route('/', methods=['GET'])
 def get_validator():
-
-
     print("validator sent to: ",request.environ['REMOTE_ADDR'])
     return validator
 
@@ -151,14 +160,8 @@ def get_cmxJSON():
 
 # Launch application with supplied arguments
 def main(argv):
-    from flaskApp import Setup
     global validator
     global secret
-    
-    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
-    
 
     try:
        opts, args = getopt.getopt(argv,"hv:s:",["validator=","secret="])
@@ -178,5 +181,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
+    from flaskApp import db
     main(sys.argv[1:])
+    db.init_app(app)
     app.run(port=5000,debug=False)

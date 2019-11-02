@@ -98,8 +98,7 @@ def getMVLink(serial_number,timestamp):
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
     NETWORK_ID = setupEntry.get('network_id')
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
+
 
     # Get video link
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/cameras/"+str(serial_number)+"/videoLink?timestamp="+str(timestamp)
@@ -121,8 +120,8 @@ def getMVOverview(serial_number):
     
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
-    NETWORK_ID = setupEntry.get('network_id')
-    validator = setupEntry.get('validator')
+   
+   
     _APMACADDR = setupEntry.get('ap_mac_address')
 
     # Get video link
@@ -145,9 +144,7 @@ def getMVZones(serial_number):
     from flaskApp import Setup
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
-    NETWORK_ID = setupEntry.get('network_id')
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
+   
 
     # Get video link
     url = "https://api.meraki.com/api/v0/devices/"+serial_number+"/camera/analytics/zones"
@@ -170,8 +167,7 @@ def getCameraScreenshot(serial_number,timestamp):
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
     NETWORK_ID = setupEntry.get('network_id')
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
+   
     # Get video link
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/cameras/"+serial_number+"/snapshot"
 
@@ -201,9 +197,7 @@ def getMVHistory(serial_number, zone):
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     print(setupEntry)
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
-    NETWORK_ID = setupEntry.get('network_id')
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
+    
 
     # Get video link
     url = "https://api.meraki.com/api/v0/devices/"+serial_number+"/camera/analytics/zones/"+zone+"/history?timespan=50400"
@@ -225,8 +219,7 @@ def getDevices():
     setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
     MERAKI_API_KEY = setupEntry.get('meraki_api_key')
     NETWORK_ID = setupEntry.get('network_id')
-    validator = setupEntry.get('validator')
-    _APMACADDR = setupEntry.get('ap_mac_address')
+    
 
     # Get video link
     url = "https://api.meraki.com/api/v0/networks/"+NETWORK_ID+"/devices/"
