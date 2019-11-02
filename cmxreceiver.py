@@ -55,7 +55,6 @@ def matchMAC(cmx, mac):
 def updateData(data):
 
     # use CSV to format data prior to pushing to database 
-    print('Pre-Staging CMX Data')
     with open('cmxData.csv','r') as csvfile, open('db.csv.temp','w',newline='') as temp:
         foundFlag = 0
         reader = csv.DictReader(csvfile)
@@ -88,7 +87,6 @@ def updateData(data):
             cmxWrite = cmxDataTbl(mac=row[0], time=row[1], rssi=row[2])
             db.session.add(cmxWrite)
     db.session.commit()
-    print('CMX DB Table Updated')
 
 
 # Save CMX Data for Recepcion
