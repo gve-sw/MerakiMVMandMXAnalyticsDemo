@@ -30,7 +30,7 @@ import time
 import pytz    # $ pip install pytz
 import tzlocal # $ pip install tzlocal
 import requests
-
+import random
 
 
 app = Flask(__name__)
@@ -159,9 +159,7 @@ def rawCMX():
 @app.route('/cmxTimes', methods=['GET','POST'])
 def cmxTimes():
 
-#testing graphs with chart.js
-    
-    # open cmx data
+   # open cmx data
     data = []
     reader = cmxDataTbl.query.all()
     count = 0
@@ -181,23 +179,27 @@ def cmxTimes():
         elif row.mac == '':
             count = count+1
             data[arrayCount]['timestamps'][count]=row.time
-# print(len(data[0]['timestamps']))
 
-    print(data)
 
+    #determine # of MAC addresses
+    macCount = sum('MAC' in s for s in data)
+    print(macCount)
+
+    #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(macCount):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+    
+    
     cmxData=getCMXHours(data)
 
     for x in cmxData:
         for y in range(len(x['timeData'])):
             x['timeData'][y]['firstSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['firstSeen'])).strftime('%m-%d,%H:%M')
             x['timeData'][y]['lastSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['lastSeen'])).strftime('%m-%d,%H:%M')
-
-
-    #labels = ["January", "February", "March", "April", "May", "June", "July", "August"]
-    #values = [10, 9, 8, 7, 6, 4, 7, 8]
-    #return render_template("cmxTimes.html",cmxData=cmxData, cmxvalues=values, cmxlabels=labels)
-
-    return render_template("cmxTimes.html",cmxData=cmxData)
+   
+    return render_template('cmxTimes.html', cmxData=cmxData, colors=graphColors)
 
 
 @app.route("/testchartdata")
@@ -216,36 +218,7 @@ def testchartdata():
 @app.route('/hourFilter', methods=['GET','POST'])
 def hourFilter():
 
-    '''
-    # testing graphs with Google Charts
-    animation_option={ "startup" : True, "duration": 1000, "easing":'out'}
-
-    hot_dog_chart = BarChart("hot_dogs", options={"title": "Contest Results",
-                                                  "width": 500,
-                                                  "height": 300,
-                                                  "animation": animation_option})
-    hot_dog_chart.add_column("string", "Competitor")
-    hot_dog_chart.add_column("number", "Hot Dogs")
-    hot_dog_chart.add_rows([["Matthew Stonie", 62],
-                            ["Joey Chestnut", 60],
-                            ["Eater X", 35.5],
-                            ["Erik Denmark", 33],
-                            ["Adrian Morgan", 31]])
-    charts.register(hot_dog_chart)
-
-    # total store traffic with material line charts
-    animation_option={ "startup" : True, "duration": 1000}
-    spectators_chart = MaterialLineChart("spectators",
-                                         options={"title": "Contest Spectators",
-                                                  "width": 500,
-                                                  "height": 300
-                                                  },
-                                         data_url=url_for('testchartdata'))
-
-    charts.register(spectators_chart)
-
-    '''
-
+   
     # open cmx data
     data = []
     reader = cmxDataTbl.query.all()
@@ -642,6 +615,7 @@ def mvOverview():
 def apiSetup():
   
     return render_template("setup.html")
+
 
 
 if __name__ == "__main__":

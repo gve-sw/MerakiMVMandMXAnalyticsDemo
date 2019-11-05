@@ -7,13 +7,15 @@
 {% block section1title %}<h2>Aggregated CMX Times</h2>{% endblock %}
 
 {% block section1content %}
-<!-- bar chart canvas element using chart.js 
-<canvas id="chart" width="300" height="200"></canvas>
--->
+
+
+<canvas id="bar-chart-total-time" width="800" height="250"></canvas>
+
+
 
 
 <div class="responsive-table">
-    <table class="table table--lined table--compressed">
+    <table id='tester' class="table table--lined table--compressed">
 
         <thead>
             <tr>
@@ -54,38 +56,58 @@
 {% block js %}
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
-<!-- import plugin script for charts from chart.js -->
-<script src="{{ url_for('static', filename='public/js/Chart.min.js') }}"></script>
+<script>
+     // Bar chart
+new Chart(document.getElementById("bar-chart-total-time"), {
+    type: 'bar',
+    data: {
+      labels: [
+      {% for x in cmxData %}
+           "{{ x['MAC'] }}",
+          {% endfor %}
+      ],
+      datasets: [
+        {
+          label: "Total Time",
+          backgroundColor: [
+              {% for color in colors %}
+              "{{ color }}",
+              {% endfor %}
+          ],
+          data: [
+          {% for x in cmxData %}
+               "{{ x['totalTime'] }}",
+              {% endfor %}
+          ]
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: 'Total Time per MAC Address'
+      }
+    }
+});
+    </script>
+
 
 
 <script>
-    // bar chart data
-    var barData = {
-        labels: {{ cmxlabels | safe }},
-    datasets: [
-        {
-            fillColor: "rgba(151,187,205,0.2)",
-            strokeColor: "rgba(151,187,205,1)",
-            pointColor: "rgba(151,187,205,1)",
-            data: {{ cmxvalues }}
-               }
-    ]
-            }
-    // get bar chart canvas
-    var mychart = document.getElementById("chart").getContext("2d");
-    steps = 10
-    max = 10
-    // draw bar chart
-    new Chart(mychart).Bar(barData, {
-        scaleOverride: true,
-        scaleSteps: steps,
-        scaleStepWidth: Math.ceil(max / steps),
-        scaleStartValue: 0,
-        scaleShowVerticalLines: true,
-        scaleShowGridLines: true,
-        barShowStroke: true,
-        scaleShowLabels: true
-    });
+ function getRandomColor() {
+        var letters = '0123456789ABCDEF'.split('');
+        var color = '#';
+        for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
 </script>
+
+
+
 {% endblock %}
