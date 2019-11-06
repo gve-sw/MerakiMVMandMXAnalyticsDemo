@@ -31,6 +31,7 @@ import pytz    # $ pip install pytz
 import tzlocal # $ pip install tzlocal
 import requests
 import random
+from collections import ChainMap
 
 
 app = Flask(__name__)
@@ -114,11 +115,6 @@ def current_config():
     validator = setupEntry.get('validator')
     ap_mac_address = setupEntry.get('ap_mac_address')
 
-
-
-
-
-    
     return render_template("currentConfig.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
 
 
@@ -202,18 +198,7 @@ def cmxTimes():
     return render_template('cmxTimes.html', cmxData=cmxData, colors=graphColors)
 
 
-@app.route("/testchartdata")
-def testchartdata():
 
-    d = {"cols": [{"id": "", "label": "Date", "pattern": "", "type": "date"},
-                  {"id": "", "label": "Spectators", "pattern": "", "type": "number"}],
-         "rows": [{"c": [{"v": datetime(2016, 5, 1), "f": None}, {"v": 3987, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 2), "f": None}, {"v": 6137, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 3), "f": None}, {"v": 9216, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 4), "f": None}, {"v": 22401, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 5), "f": None}, {"v": 24587, "f": None}]}]}
-
-    return jsonify(prep_data(d))
 
 @app.route('/hourFilter', methods=['GET','POST'])
 def hourFilter():
@@ -363,10 +348,6 @@ def correlation():
 # this is for the GET to show the overview
 @app.route('/',methods=['GET'])
 def index():
-    
-    
-
-
     return render_template("pleasewait.html", theReason='Getting all cameras for network: ' + NETWORK_ID)
 
 
@@ -450,6 +431,7 @@ def mvOverview():
 
                 thisEntrances = MVHistory[j]["entrances"]
 
+                
                 # Now we will use localHour instead of thisHour as the Dict key to hold the accounting for body
                 # detection per hour since that is what is shown on the graph, it should behave the same otherwise
                 # as when we used thisHour originally, but show a local hour instead of UTC which was confusing.
@@ -535,6 +517,7 @@ def mvOverview():
         if devices_data != 'link error':
 
             AllDevices=json.loads(devices_data)
+          
 
             #theDeviceCharts is just a list (array) of the names of the charts constructed with the
             #google charts flask library. They are to be iterated through to place on the History/details page
@@ -563,7 +546,32 @@ def mvOverview():
                     continue
 
                 print("getMVZones returned:" , zonesdetaildata)
+
+               
+                #JSON data to use for table and chart.js
                 MVZonesDetails=json.loads(zonesdetaildata)
+                entranceData = json.loads(data)
+                
+                labelList = []
+                graphColors = []
+                for i in range(len(MVZonesDetails)):
+                    label = MVZonesDetails[i].get('label')
+                    labelList.append(label)
+                    randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+                    graphColors.append(randomColor)
+
+
+                print(labelList)
+
+                entranceCountList = []
+                for i in range(len(entranceData)):
+                    count = entranceData[i].get('entrances')
+                    entranceCountList.append(count)
+
+                print(entranceCountList)
+
+
+                
 
                 # add a chart
                 #first add the name of the chart to the list of charts to be displayed in the page
@@ -580,7 +588,8 @@ def mvOverview():
                                                                           "animation": animation_option})
                 mv_overview_chart.add_column("string", "Zone")
                 mv_overview_chart.add_column("number", "Visitors")
-                print(data)
+                
+               
                 the_rows = []
                 for j in range(len(MVZones)):
                     thisZone=MVZones[j]
@@ -598,14 +607,20 @@ def mvOverview():
                     theDeviceDetails[theChartNum][2].append([thisZoneDetails["zoneId"], thisZoneDetails["label"]])
 
                 mv_overview_chart.add_rows(the_rows)
-                charts.register(mv_overview_chart)
+                #charts.register(mv_overview_chart)
 
                 theChartNum+=1
 
             print("Rendering overview form with:")
             print("allTheDetails=",theDeviceDetails)
+            
+            #Chart.js build
+            chartCount = []
+            for i in range(len(theDeviceDetails)):
+                chartCount.append(i)
 
-            return render_template("mvOverview.html",allTheCharts=theDeviceCharts,allTheDetails=theDeviceDetails)
+
+            return render_template("mvOverview.html",chartCount=chartCount, colors=graphColors, zoneLabel=labelList, entranceCount=entranceCountList, allTheCharts=theDeviceCharts,allTheDetails=theDeviceDetails)
 
         else:
             return render_template('error.html'), 404

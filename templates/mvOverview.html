@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block section1title %}
-<h2>MV Overview - Last 7 Days</h2>
+<h2>MV Overview</h2>
 {% endblock %}
 
 
@@ -28,10 +28,14 @@
 <!--Chart-->
 {% block section1content %}
 
+{% for chart in chartCount %}
+<canvas id="bar-chart-{{chart}}" width="800" height="250"></canvas>
+{% endfor %}
+<br>
 
 {% set count = 0 %}
-{% for theDeviceChart in allTheCharts %}
-{{charts[theDeviceChart]}}
+
+
 
 
 {% for theDeviceZoneDetails in allTheDetails[count][2] %}
@@ -62,7 +66,7 @@
 </div>
 
 
-{% endfor %}
+
 
 
 {% set count = count + 1 %}
@@ -78,10 +82,7 @@
 
 
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 
-{{ charts_init }}
 
 
 <script type="text/javascript">
@@ -93,18 +94,47 @@
 
 
 
-<script type="text/javascript">
-    // Load the Visualization API and the corechart package.
-    google.charts.load('current', { 'packages': ['corechart'] });
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
-    // Every time the table fires the "select" event, it should call your
-    // selectHandler() function.
-    google.visualization.events.addListener(chart - options - chart0, 'select', selectHandler);
 
-    function selectHandler(e) {
-        alert('A table row was selected');
+{% for chart in chartCount %}
+<script>
+     // Bar chart
+new Chart(document.getElementById("bar-chart-{{chart}}"), {
+    type: 'bar',
+    data: {
+      labels: [
+      {% for x in zoneLabel %}
+           "{{ x }}",
+          {% endfor %}
+      ],
+      datasets: [
+        {
+          label: "Visitors",
+          backgroundColor: [
+              {% for color in colors %}
+              "{{ color }}",
+              {% endfor %}
+          ],
+          data: [
+          {% for x in entranceCount %}
+               "{{ x }}",
+              {% endfor %}
+          ]
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: 'Entrance Count Per Zone'
+      }
     }
-</script>
+});
+    </script>
+{% endfor %}
+
 
 
 {% endblock %}
