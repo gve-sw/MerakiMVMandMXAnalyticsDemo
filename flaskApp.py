@@ -275,6 +275,7 @@ def cmxActivity():
             data[arrayCount]['timestamps'][count]=row.time
     newData = computeCMXActivity(data)
 
+    '''
     #add a chart
     animation_option={ "startup" : True, "duration": 1000, "easing":'out'}
 
@@ -292,7 +293,15 @@ def cmxActivity():
     cmx_activity_chart.add_rows(the_rows)
 
     charts.register(cmx_activity_chart)
-    return render_template("cmxActivity.html",x=newData)
+    '''
+
+    #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(0,23):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+    return render_template("cmxActivity.html",x=newData, colors=graphColors)
 
 
 @app.route('/mvActivity',methods=['GET','POST'])
