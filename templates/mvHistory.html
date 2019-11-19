@@ -11,10 +11,12 @@
 {% block pageTitle %}MV History{% endblock %}
 
 {% block section1title %}<h2>MV Visitors</h2>
-<h3>Last 14 hours. Timezone: {{localTimezone}}</h3>{% endblock %}
+<h3>Timezone: {{localTimezone}}</h3>{% endblock %}
 
 {% block section1content %}
-{{ charts.mvhistorychart }}
+
+<canvas id="bar-chart-mv-history" width="800" height="250"></canvas>
+
 
 <div class=row>
     {% for theDeviceChart in snapshotsArray %}
@@ -38,24 +40,52 @@
 
 {% block js %}
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
 <script>
-
-
-    window.addEventListener('load', function () {
-        var allimages = document.getElementsByTagName('img');
-        for (var i = 0; i < allimages.length; i++) {
-            if (allimages[i].getAttribute('data-src')) {
-
-                allimages[i].setAttribute('src', allimages[i].getAttribute('data-src'));
-            }
+     // Bar chart
+new Chart(document.getElementById("bar-chart-mv-history"), {
+    type: 'bar',
+    data: {
+      labels: [
+      {% for x in labelList %}
+           "{{ x }}",
+          {% endfor %}
+      ],
+      datasets: [
+        {
+          label: "Total Count",
+          backgroundColor: [
+              {% for color in colors %}
+              "{{ color }}",
+              {% endfor %}
+          ],
+          data: [
+          {% for x in visitorCountList %}
+               "{{ x }}",
+              {% endfor %}
+          ]
         }
-    }, false)
-</script>
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: 'Visitor Count'
+      }
+    }
+});
+    </script>
 
 
 
-{{ charts_init }}
+
+
+
+
 {% endblock %}
+
+

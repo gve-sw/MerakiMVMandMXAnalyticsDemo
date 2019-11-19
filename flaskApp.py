@@ -496,11 +496,36 @@ def mvOverview():
                 the_rows.append([dEntryKey, theHoursDict[dEntryKey]])
 
             mv_history_chart.add_rows(the_rows)
-            charts.register(mv_history_chart)
+            print('\n\n')
+            
+            print(the_rows)
+            print('\n\n')
+            #charts.register(mv_history_chart)
 
             print("Max Entrances Timestamps: ", theHoursMaxEntrancesTimestampDict)
             print("Max Local Entrances Timestamps: ", theLocalHoursMaxEntrancesTimestampDict)
 
+            labelList = []
+            visitorCountList = []
+
+            for list in the_rows:
+                for number in list:
+                    if (isinstance(number, str)):
+                        labelList.append(number)
+                    else:
+                        visitorCountList.append(number)
+
+            print(labelList)
+            print(visitorCountList)
+
+
+            graphColors = []
+            for i in range(len(labelList)):
+                randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+                graphColors.append(randomColor)
+
+
+    
             
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
             #this is to be passed to the form that will render them
@@ -523,18 +548,24 @@ def mvOverview():
             #GET request img urls to ensure img delivery           
             for x in urlList:
                 status = True
+                getCount = 0
                 while status:
                     res = requests.get(x)
                     if (res.status_code != 200):
                         #check the the status and assign to offense_response.status_code
                         print("Status code is not 200, retrying request")
-                    
+                        getCount = getCount + 1
+                        print(getCount)
+                        if getCount == 15:
+                            print('unable to fetch image after multiple attempts')
+                            status = False
                     else:
                         print("status code is 200, hence exiting")
                         status = False
-         
+
+
             
-            return render_template("mvHistory.html", historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
+            return render_template("mvHistory.html", colors=graphColors, labelList=labelList, visitorCountList=visitorCountList, historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
             
            
             
