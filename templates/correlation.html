@@ -9,6 +9,8 @@
 <!--Table-->
 {% block section1content %}
 
+<canvas id="bar-chart-mac-rssi" width="800" height="250"></canvas>
+
 <div class="responsive-table">
     <table class="table table--lined table--compressed">
 
@@ -41,4 +43,57 @@
     </table>
 
 </div>
+{% endblock %}
+
+{% block js %}
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+<script>
+     // Bar chart
+new Chart(document.getElementById("bar-chart-mac-rssi"), {
+    type: 'bar',
+    data: {
+      labels: [
+      {% for x in correlation %}
+      {% for y in x['devices'] %}
+           "{{ y['MAC'] }}",
+          {% endfor %}
+          {% endfor %}
+      ],
+      datasets: [
+        {
+          label: "Total RSSI",
+          backgroundColor: [
+              {% for color in colors %}
+              "{{ color }}",
+              {% endfor %}
+          ],
+          data: [
+          {% for x in correlation %}
+          {% for y in x['devices'] %}
+               "{{ y['rssi'] }}",
+              {% endfor %}
+              {% endfor %}
+          ]
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: 'RSSI per MAC'
+      }
+    }
+});
+    </script>
+
+
+
+
+
+
+
 {% endblock %}

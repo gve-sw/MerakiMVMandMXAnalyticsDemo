@@ -364,7 +364,15 @@ def correlation():
         mvData.append({'timeIn':row.timeIn,'timeOut':row.timeOut,'count':row.count})
     print("Computing co-relation...")
     newData = getCorrelation(data,mvData)
-    return render_template("correlation.html",correlation=newData)
+
+     #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(0,100):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+
+    return render_template("correlation.html",correlation=newData, colors=graphColors)
 
 
 # this is for the GET to show the overview
