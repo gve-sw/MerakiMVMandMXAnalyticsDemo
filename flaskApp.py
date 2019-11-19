@@ -297,7 +297,7 @@ def cmxActivity():
 
     #dynamically generate graph colors based on # of MAC addresses 
     graphColors = []
-    for x in range(0,23):
+    for x in range(0,25):
         randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
         graphColors.append(randomColor)
 
@@ -316,7 +316,14 @@ def mvActivity():
         data.append({'timeIn':row.timeIn,'timeOut':row.timeOut,'count':row.count})
     newData = computeMVActivity(data)
     # print(len(data[0]['timestamps']))
-    return render_template("mvActivity.html",x=newData)
+
+     #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(0,25):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+    return render_template("mvActivity.html",x=newData, colors=graphColors)
 
 @app.route('/correlation',methods=['GET','POST'])
 def correlation():
