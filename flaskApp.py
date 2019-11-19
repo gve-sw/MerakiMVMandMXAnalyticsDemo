@@ -251,7 +251,13 @@ def mvSense():
         link = link.replace('"}',"")
         data.append({'timeIn':datetime.fromtimestamp(float(row.timeIn)/1000).strftime('%m-%d,%H:%M'),'timeOut':datetime.fromtimestamp(float(row.timeOut)/1000).strftime('%m-%d,%H:%M'),'count':row.count,'link':link})
 # print(len(data[0]['timestamps']))
-    return render_template("mvSense.html",data=data)
+
+    graphColors = []
+    for x in range(0,25):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+    return render_template("mvSense.html",data=data, colors=graphColors)
 
 @app.route('/cmxActivity',methods=['GET','POST'])
 def cmxActivity():

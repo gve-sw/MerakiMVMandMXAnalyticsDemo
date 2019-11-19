@@ -9,6 +9,9 @@
 <!--Table-->
 {% block section1content %}
 
+
+<canvas id="bar-chart-total-people" width="800" height="250"></canvas>
+
 <div class="responsive-table"></div>
 <table class="table table--lined table--compressed">
   <thead>
@@ -32,4 +35,54 @@
 
 </table>
 </div>
+{% endblock %}
+
+
+{% block js %}
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+<script>
+     // Bar chart
+new Chart(document.getElementById("bar-chart-total-people"), {
+    type: 'bar',
+    data: {
+      labels: [
+      {% for x in data %}
+           "{{ x['timeIn'] }} - {{ x['timeOut'] }}",
+          {% endfor %}
+      ],
+      datasets: [
+        {
+          label: "Total People",
+          backgroundColor: [
+              {% for color in colors %}
+              "{{ color }}",
+              {% endfor %}
+          ],
+          data: [
+          {% for x in data %}
+               "{{ x['count'] }}",
+              {% endfor %}
+          ]
+        }
+      ]
+    },
+    options: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: 'Total People per Time'
+      }
+    }
+});
+    </script>
+
+
+
+
+
+
+
 {% endblock %}
