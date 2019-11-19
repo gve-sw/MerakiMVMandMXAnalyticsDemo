@@ -253,7 +253,7 @@ def mvSense():
 # print(len(data[0]['timestamps']))
 
     graphColors = []
-    for x in range(0,25):
+    for x in range(len(data)):
         randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
         graphColors.append(randomColor)
 
