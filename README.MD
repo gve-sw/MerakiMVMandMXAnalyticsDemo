@@ -21,6 +21,7 @@ There are 3 main functionalities in this repository:
 
 **Configuration UI** (http://0.0.0.0:5001/setup) provides user option to input Meraki API Key, Network ID, Camera Serial #, Validator, and AP MAC Address. These values are stored in the application's SQLite database that is hosted locally on the user's endpoint. Other configuration parameters can be configured from the config.py file. If there is an error in the API configuration, the user will receive a prompt to check configuration and input correct values. The image below illustrates how this interaction works: 
 
+![Setup UI Sequence Diagram](https://raw.githubusercontent.com/gve-sw/MerakiMVMandMXAnalyticsDemo/feature/update-readme/Slide1.png)
 
 **Config.py** contains all of the other global variables and configuration needed throughout the code, including keys and thresholds. 
 
