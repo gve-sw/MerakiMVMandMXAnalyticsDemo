@@ -9,7 +9,7 @@
 
 
 <style>
-    #loadingDiv {
+    #loadingZoneDiv {
         display: none;
     }
 
@@ -21,7 +21,11 @@
 
 {% block section1title %}
 <h2>MV Overview</h2>
+
+
+
 {% endblock %}
+
 
 
 
@@ -41,7 +45,7 @@
 {% for theDeviceZoneDetails in allTheDetails[count][2] %}
 <div class='col-xs-12 col-md-2'>
     <form action="{{ url_for('mvOverview') }}" method="post">
-        <button class="btn btn--primary" type="submit" name="zone_details" onclick="showDiv()"
+        <button class="btn btn--primary" type="submit" name="zone_details" onclick="showZoneLoadDiv()"
             value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}">{{theDeviceZoneDetails[1]}}
             details</button><br><br>
     </form>
@@ -49,21 +53,7 @@
 
 
 
-<div id="loadingDiv" class=row>
 
-
-
-    <div class="alert alert--info">
-        <div class="alert__icon icon-info-outline"></div>
-        <div class="alert__message">Loading {{theDeviceZoneDetails[1]}} details {{feedbackMsg}}</div>
-        <div class="loader loader--small" aria-label="Loading, please wait...">
-            <div class="wrapper">
-                <div class="wheel"></div>
-            </div>
-        </div>
-    </div>
-
-</div>
 
 
 
@@ -72,6 +62,7 @@
 {% set count = count + 1 %}
 
 {% endfor %}
+
 
 
 {% endblock %}
@@ -87,8 +78,8 @@
 
 <script type="text/javascript">
 
-    function showDiv() {
-        document.getElementById('loadingDiv').style.display = "block";
+    function showZoneLoadDiv() {
+        document.getElementById('loadingZoneDiv').style.display = "block";
     }
 </script>
 
@@ -133,6 +124,12 @@ new Chart(document.getElementById("bar-chart-{{chart}}"), {
     }
 });
     </script>
+
+<script>
+        function myFunction() {
+          alert("I am an alert box!");
+        }
+        </script>
 {% endfor %}
 
 
