@@ -38,9 +38,9 @@ Leverage Meraki new camera API and MQTT capability to create a notification serv
 2. MQTT_SERVER is the MQTT broker ip or domain ("test.mosquitto.org" for example)
 3. MQTT_PORT is the MQTT broker port being utilized (usually 1883)
 4. MQTT_TOPIC is the top of the Meraki camera Matt, boy default it is “/merakimv/#”
-5. MERAKI_API_KEY is the Meraki Api key for organization --> user updates this in Configuration UI
-6. NETWORK_ID is Camera's network ID, will use this get video link with camera api --> user updates this in Configuration UI
-7. COLLECT_CAMERAS_SERIAL_NUMBERS is the array of cameras serial numbers, for all of there cameras use * user updates in Configuration UI
+5. MERAKI_API_KEY is the Meraki Api key for organization **> user updates this in Configuration UI**
+6. NETWORK_ID is Camera's network ID, will use this get video link with camera api **> user updates this in Configuration UI**
+7. COLLECT_CAMERAS_SERIAL_NUMBERS is the array of cameras serial numbers, for all of there cameras use * **> user updates this in Configuration UI**
 8. COLLECT_ZONE_IDS is Array of camera zone id, all is *
 9. MOTION_ALERT_PEOPLE_COUNT_THRESHOLD is the minimum number of people detected in camera to trigger the start of an activity
 10. MOTION_ALERT_ITERATE_COUNT is the minimum number of mqtt messages counted to indicate that an activity has successfully occurred
