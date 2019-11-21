@@ -43,14 +43,15 @@
 
 
 {% for theDeviceZoneDetails in allTheDetails[count][2] %}
-<div class='col-xs-12 col-md-2'>
+<center>
+<div>
     <form action="{{ url_for('mvOverview') }}" method="post">
-        <button class="btn btn--primary" type="submit" name="zone_details" onclick="showZoneLoadDiv()"
+        <button class="btn btn--large btn--justified" type="submit" name="zone_details" onclick="showZoneLoadDiv()"
             value="{{allTheDetails[count][0]}},{{allTheDetails[count][1]}},{{theDeviceZoneDetails[0]}},{{theDeviceZoneDetails[1]}}">{{theDeviceZoneDetails[1]}}
             details</button><br><br>
     </form>
 </div>
-
+</center>
 
 
 
@@ -125,11 +126,7 @@ new Chart(document.getElementById("bar-chart-{{chart}}"), {
 });
     </script>
 
-<script>
-        function myFunction() {
-          alert("I am an alert box!");
-        }
-        </script>
+
 {% endfor %}
 
 
