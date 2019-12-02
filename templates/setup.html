@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Setup{% endblock %}
+
+{% block pageTitle %}Setup{% endblock %}
+
+{% block section1title %}<h2>Setup</h2>{% endblock %}
+
+
+{% block section1content %}
+
+<form class="form-signin" method="POST" action="{{ url_for('setup_post')}}">
+    <div class="form-group">
+      <label for="inputMerakiAPIKey" class="sr-only"><b>Meraki API Key</b></label><br>
+      <input type="text" id="inputMerakiAPIKey" name="merakiAPIKey" class="form-control" required autofocus>
+    </div>
+
+    <div class="form-group">
+        <label for="inputNetworkID" class="sr-only"><b>Network ID</b></label><br>
+        <input type="text" id="inputNetworkID" name="networkID" class="form-control" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="inputCameraSerial" class="sr-only"><b>Camera Serial #</b></label><br>
+        <input type="text" id="inputCameraSerial" name="cameraSerial" class="form-control" required autofocus>
+      </div>
+
+
+      <div class="form-group">
+        <label for="inputValidator" class="sr-only"><b>Validator</b></label><br>
+        <input type="text" id="inputValidator" name="validator" class="form-control" required autofocus>
+      </div>
+
+
+      <div class="form-group">
+        <label for="inputAPMAC" class="sr-only"><b>AP MAC Address</b></label><br>
+        <input type="text" id="inputAPMAC" name="apMAC" class="form-control" required autofocus>
+      </div>
+      <br>
+    <button class="btn btn-lg btn-primary btn-block" type="submit"><b>Submit</b></button>
+  </form>
+<br>
+
+<form class="form-currentconfig" method="GET" action="{{ url_for('current_config')}}">
+  <button class="btn btn-lg btn-primary btn-block" type="submit"><b>Check Current Configuration</b></button>
+</form>
+
+{% endblock %}

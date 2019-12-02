@@ -16,151 +16,215 @@ or implied.
 # web application GUI
 
 
-from flask import Flask, render_template, request, jsonify, url_for, json
+from flask import Flask, render_template, request, jsonify, url_for, json, redirect
+from flask_sqlalchemy import SQLAlchemy
 import csv
 import shutil
 from datetime import datetime
 from flask_googlecharts import GoogleCharts
 from flask_googlecharts import BarChart, MaterialLineChart, ColumnChart
 from flask_googlecharts.utils import prep_data
-from config import COLLECT_CAMERAS_MVSENSE_CAPABLE, NETWORK_ID
+from config import COLLECT_CAMERAS_MVSENSE_CAPABLE
 from compute import *
 import time
 import pytz    # $ pip install pytz
 import tzlocal # $ pip install tzlocal
+import requests
+import random
+from collections import ChainMap
+
 
 app = Flask(__name__)
 charts = GoogleCharts(app)
 
+#SQLAlchemy
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+
+db = SQLAlchemy(app)
+
+
+
+#Setup Table
+class Setup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    meraki_api_key = db.Column(db.String(100))
+    network_id = db.Column(db.String(50))
+    camera_serial_number = db.Column(db.String(20))
+    validator = db.Column(db.String(50))
+    ap_mac_address = db.Column(db.String(30))
+    date_created = db.Column(db.DateTime, default=datetime.now)
+
+#cmxData Table
+class cmxDataTbl(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    mac = db.Column(db.String(20))
+    time = db.Column(db.String(10))
+    rssi = db.Column(db.String(5))
+
+#mvData Table
+class mvDataTbl(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timeIn = db.Column(db.String(10))
+    timeOut = db.Column(db.String(10))
+    count = db.Column(db.String(5))
+
+
+#query setup DB
+print('Performing Initial Setup')
+setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+print(setupEntry)
+MERAKI_API_KEY = setupEntry.get('meraki_api_key')
+NETWORK_ID = setupEntry.get('network_id')
+validator = setupEntry.get('validator')
+_APMACADDR = setupEntry.get('ap_mac_address')
+camera_serial_number = setupEntry.get('camera_serial_number')
+
+
+#POST config data to DB
+@app.route('/commit', methods=['POST'])
+def setup_post():
+    #get data from html form via name
+    meraki_api_key = request.form.get('merakiAPIKey')
+    network_id = request.form.get('networkID')
+    camera_serial_number = request.form.get('cameraSerial')
+    validator = request.form.get('validator')
+    ap_mac_address = request.form.get('apMAC')
+
+    #update DB with form input
+    setup = Setup(meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+    db.session.add(setup)
+    db.session.commit()
+
+    
+    return render_template("success.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+
+
+@app.route('/currentconfig', methods=['GET'])
+def current_config():
+
+
+    #query setup DB
+    print('Performing Initial Setup')
+    setupEntry = Setup.query.order_by(Setup.id.desc()).first().__dict__
+    print(setupEntry)
+    meraki_api_key = setupEntry.get('meraki_api_key')
+    network_id = setupEntry.get('network_id')
+    camera_serial_number = setupEntry.get('camera_serial_number')
+    validator = setupEntry.get('validator')
+    ap_mac_address = setupEntry.get('ap_mac_address')
+
+    return render_template("currentConfig.html",meraki_api_key=meraki_api_key, network_id=network_id, camera_serial_number=camera_serial_number, validator=validator, ap_mac_address=ap_mac_address)
+
+
 
 @app.route('/rawCMX', methods=['GET','POST'])
 def rawCMX():
+
+
     if request.method == 'POST':
         select = flask.request.form.get('select')
         if select == 'cmxTimes':
             return cmxTimes()
-    # open cmx data
+
+   
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']}]})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']}]})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'].append({'ts':datetime.fromtimestamp(float(row['time'])).strftime('%m-%d,%H:%M'),'rssi':row['rssi']})
+    #query cmx_data_tbl
+    reader = cmxDataTbl.query.all()
+
+    count = 0
+    arrayCount=0
+    flag=0
+    
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':[{'ts':datetime.fromtimestamp(float(row.time)).strftime('%m-%d,%H:%M'),'rssi':row.rssi}]})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':[{'ts':datetime.fromtimestamp(float(row.time)).strftime('%m-%d,%H:%M'),'rssi':row.rssi}]})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'].append({'ts':datetime.fromtimestamp(float(row.time)).strftime('%m-%d,%H:%M'),'rssi':row.rssi})
+
     return render_template("rawCMX.html",data=data)
 
 @app.route('/cmxTimes', methods=['GET','POST'])
 def cmxTimes():
 
-#testing graphs with chart.js
-
-    # open cmx data
+   # open cmx data
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'][count]=row['time']
-    # print(len(data[0]['timestamps']))
+    reader = cmxDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        print(row.mac)
+        print(row.time)
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'][count]=row.time
+
+
+    #determine # of MAC addresses
+    macCount = sum('MAC' in s for s in data)
+    print(macCount)
+
+    #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(macCount):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+    
+    
     cmxData=getCMXHours(data)
+
     for x in cmxData:
         for y in range(len(x['timeData'])):
             x['timeData'][y]['firstSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['firstSeen'])).strftime('%m-%d,%H:%M')
             x['timeData'][y]['lastSeen'] = datetime.fromtimestamp(float(x['timeData'][y]['lastSeen'])).strftime('%m-%d,%H:%M')
+   
+    return render_template('cmxTimes.html', cmxData=cmxData, colors=graphColors)
 
 
-    labels = ["January", "February", "March", "April", "May", "June", "July", "August"]
-    values = [10, 9, 8, 7, 6, 4, 7, 8]
 
-    return render_template("cmxTimes.html",cmxData=cmxData, cmxvalues=values, cmxlabels=labels)
-
-@app.route("/testchartdata")
-def testchartdata():
-
-    d = {"cols": [{"id": "", "label": "Date", "pattern": "", "type": "date"},
-                  {"id": "", "label": "Spectators", "pattern": "", "type": "number"}],
-         "rows": [{"c": [{"v": datetime(2016, 5, 1), "f": None}, {"v": 3987, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 2), "f": None}, {"v": 6137, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 3), "f": None}, {"v": 9216, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 4), "f": None}, {"v": 22401, "f": None}]},
-                  {"c": [{"v": datetime(2016, 5, 5), "f": None}, {"v": 24587, "f": None}]}]}
-
-    return jsonify(prep_data(d))
 
 @app.route('/hourFilter', methods=['GET','POST'])
 def hourFilter():
-    # testing graphs with Google Charts
-    animation_option={ "startup" : True, "duration": 1000, "easing":'out'}
 
-    hot_dog_chart = BarChart("hot_dogs", options={"title": "Contest Results",
-                                                  "width": 500,
-                                                  "height": 300,
-                                                  "animation": animation_option})
-    hot_dog_chart.add_column("string", "Competitor")
-    hot_dog_chart.add_column("number", "Hot Dogs")
-    hot_dog_chart.add_rows([["Matthew Stonie", 62],
-                            ["Joey Chestnut", 60],
-                            ["Eater X", 35.5],
-                            ["Erik Denmark", 33],
-                            ["Adrian Morgan", 31]])
-    charts.register(hot_dog_chart)
-
-    # total store traffic with material line charts
-    animation_option={ "startup" : True, "duration": 1000}
-    spectators_chart = MaterialLineChart("spectators",
-                                         options={"title": "Contest Spectators",
-                                                  "width": 500,
-                                                  "height": 300
-                                                  },
-                                         data_url=url_for('testchartdata'))
-
-    charts.register(spectators_chart)
-
-
-
+   
     # open cmx data
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'][count]=row['time']
-    # print(len(data[0]['timestamps']))
+    reader = cmxDataTbl.query.all()
+
+   
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'][count]=row.time
+# print(len(data[0]['timestamps']))
     cmxData=cmxFilterHours(data)
     for x in cmxData:
         for y in range(len(x['timeData'])):
@@ -175,43 +239,49 @@ def hourFilter():
 def mvSense():
     # open mv sense data
     data = []
-    with open('mvData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            print(row['Time In'])
-            link = getMVLink('Q2EV-2QFS-YRYE',row['Time In'])
-            link = link.replace('{"url":"',"")
-            link = link.replace('"}',"")
-            data.append({'timeIn':datetime.fromtimestamp(float(row['Time In'])/1000).strftime('%m-%d,%H:%M'),'timeOut':datetime.fromtimestamp(float(row['Time Out'])/1000).strftime('%m-%d,%H:%M'),'count':row['Count'],'link':link})
-    # print(len(data[0]['timestamps']))
-    return render_template("mvSense.html",data=data)
+    reader = mvDataTbl.query.all()
+
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        print(row.timeIn)
+        link = getMVLink(camera_serial_number,row.timeIn) 
+        link = link.replace('{"url":"',"")
+        link = link.replace('"}',"")
+        data.append({'timeIn':datetime.fromtimestamp(float(row.timeIn)/1000).strftime('%m-%d,%H:%M'),'timeOut':datetime.fromtimestamp(float(row.timeOut)/1000).strftime('%m-%d,%H:%M'),'count':row.count,'link':link})
+# print(len(data[0]['timestamps']))
+
+    graphColors = []
+    for x in range(len(data)):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+    return render_template("mvSense.html",data=data, colors=graphColors)
 
 @app.route('/cmxActivity',methods=['GET','POST'])
 def cmxActivity():
     # open cmx data
     data = []
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':{count:row['time']}})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'][count]=row['time']
+    reader = cmxDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':{count:row.time}})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'][count]=row.time
     newData = computeCMXActivity(data)
 
+    '''
     #add a chart
     animation_option={ "startup" : True, "duration": 1000, "easing":'out'}
 
@@ -229,68 +299,91 @@ def cmxActivity():
     cmx_activity_chart.add_rows(the_rows)
 
     charts.register(cmx_activity_chart)
-    return render_template("cmxActivity.html",x=newData)
+    '''
+
+    #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(0,25):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+    return render_template("cmxActivity.html",x=newData, colors=graphColors)
 
 
 @app.route('/mvActivity',methods=['GET','POST'])
 def mvActivity():
     # open mv sense data
     data = []
-    with open('mvData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            data.append({'timeIn':row['Time In'],'timeOut':row['Time Out'],'count':row['Count']})
+    reader = mvDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        data.append({'timeIn':row.timeIn,'timeOut':row.timeOut,'count':row.count})
     newData = computeMVActivity(data)
     # print(len(data[0]['timestamps']))
-    return render_template("mvActivity.html",x=newData)
+
+     #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(0,25):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+    return render_template("mvActivity.html",x=newData, colors=graphColors)
 
 @app.route('/correlation',methods=['GET','POST'])
 def correlation():
     # open cmx data
     data = []
     print("Reading CMX Data...")
-    with open('cmxData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            if row['MAC'] != '' and flag==0:
-                count = 0
-                flag = 1
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':row['time'],'rssi':row['rssi']}]})
-            elif row['MAC'] != '' and flag==1:
-                arrayCount = arrayCount+1
-                count = 0
-                data.append({'MAC':row['MAC'],'timestamps':[{'ts':row['time'],'rssi':row['rssi']}]})
-            elif row['MAC'] == '':
-                count = count+1
-                data[arrayCount]['timestamps'].append({'ts':row['time'],'rssi':row['rssi']})
+    reader = cmxDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        if row.mac != '' and flag==0:
+            count = 0
+            flag = 1
+            data.append({'MAC':row.mac,'timestamps':[{'ts':row.time,'rssi':row.rssi}]})
+        elif row.mac != '' and flag==1:
+            arrayCount = arrayCount+1
+            count = 0
+            data.append({'MAC':row.mac,'timestamps':[{'ts':row.time,'rssi':row.rssi}]})
+        elif row.mac == '':
+            count = count+1
+            data[arrayCount]['timestamps'].append({'ts':row.time,'rssi':row.rssi})
+
     # open mv sense data
     print("Reading MVSense Data...")
     mvData = []
-    with open('mvData.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        count = 0
-        arrayCount=0
-        flag=0
-        for row in reader:
-            mvData.append({'timeIn':row['Time In'],'timeOut':row['Time Out'],'count':row['Count']})
+    reader = mvDataTbl.query.all()
+    count = 0
+    arrayCount=0
+    flag=0
+    for row in reader:
+        mvData.append({'timeIn':row.timeIn,'timeOut':row.timeOut,'count':row.count})
     print("Computing co-relation...")
     newData = getCorrelation(data,mvData)
-    return render_template("correlation.html",correlation=newData)
 
+     #dynamically generate graph colors based on # of MAC addresses 
+    graphColors = []
+    for x in range(0,100):
+        randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        graphColors.append(randomColor)
+
+
+    return render_template("correlation.html",correlation=newData, colors=graphColors)
+
+
+# this is for the GET to show the overview
 @app.route('/',methods=['GET'])
 def index():
-    # this is for the GET to show the overview
     return render_template("pleasewait.html", theReason='Getting all cameras for network: ' + NETWORK_ID)
 
 
 @app.route('/mvOverview',methods=['GET','POST'])
 def mvOverview():
+    
     # extract MVSense over view data for a camera from the analytics API
     MVZones = []
     animation_option = {"startup": True, "duration": 1000, "easing": 'out'}
@@ -314,6 +407,7 @@ def mvOverview():
 
             print("getMVHistory returned:", data)
 
+            
             MVHistory = json.loads(data)
             # add a chart
 
@@ -367,6 +461,7 @@ def mvOverview():
 
                 thisEntrances = MVHistory[j]["entrances"]
 
+                
                 # Now we will use localHour instead of thisHour as the Dict key to hold the accounting for body
                 # detection per hour since that is what is shown on the graph, it should behave the same otherwise
                 # as when we used thisHour originally, but show a local hour instead of UTC which was confusing.
@@ -401,15 +496,41 @@ def mvOverview():
                 the_rows.append([dEntryKey, theHoursDict[dEntryKey]])
 
             mv_history_chart.add_rows(the_rows)
-            charts.register(mv_history_chart)
+            print('\n\n')
+            
+            print(the_rows)
+            print('\n\n')
+            #charts.register(mv_history_chart)
 
             print("Max Entrances Timestamps: ", theHoursMaxEntrancesTimestampDict)
             print("Max Local Entrances Timestamps: ", theLocalHoursMaxEntrancesTimestampDict)
 
+            labelList = []
+            visitorCountList = []
+
+            for list in the_rows:
+                for number in list:
+                    if (isinstance(number, str)):
+                        labelList.append(number)
+                    else:
+                        visitorCountList.append(number)
+
+            print(labelList)
+            print(visitorCountList)
+
+
+            graphColors = []
+            for i in range(len(labelList)):
+                randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+                graphColors.append(randomColor)
+
+
+    
+            
             #theScreenshots is an array of arays in the format [ timestamp string,  snapshot URL ]
             #this is to be passed to the form that will render them
             theScreenshots=[]
-
+            urlList = []
             for dTimeStampKey in theHoursMaxEntrancesTimestampDict.keys():
                 if theHoursMaxEntrancesTimestampDict[dTimeStampKey]!='':
                     screenShotURLdata=getCameraScreenshot(theSERIAL,theHoursMaxEntrancesTimestampDict[dTimeStampKey])
@@ -420,16 +541,44 @@ def mvOverview():
                         #to show a local timestamp we calculated in a previous loop
                         theScreenshots.append([ theLocalHoursMaxEntrancesTimestampDict[dTimeStampKey], screenShotURL["url"]])
 
-            # wait for the URLs to be valid
-            print("Waiting 10 seconds...")
-            time.sleep(10)
-            return render_template("mvHistory.html", historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
+
+                        
+                        urlList.append(screenShotURL['url'])
+
+            #GET request img urls to ensure img delivery           
+            for x in urlList:
+                status = True
+                getCount = 0
+                while status:
+                    res = requests.get(x)
+                    if (res.status_code != 200):
+                        #check the the status and assign to offense_response.status_code
+                        print("Status code is not 200, retrying request")
+                        getCount = getCount + 1
+                        print(getCount)
+                        if getCount == 15:
+                            print('unable to fetch image after multiple attempts')
+                            status = False
+                    else:
+                        print("status code is 200, hence exiting")
+                        status = False
+
+
+            
+            return render_template("mvHistory.html", colors=graphColors, labelList=labelList, visitorCountList=visitorCountList, historyChart=mv_history_chart, snapshotsArray=theScreenshots, localTimezone=local_timezone_str)
+            
+           
+            
+
+         
+
     else:
 
         devices_data=getDevices()
         if devices_data != 'link error':
 
             AllDevices=json.loads(devices_data)
+          
 
             #theDeviceCharts is just a list (array) of the names of the charts constructed with the
             #google charts flask library. They are to be iterated through to place on the History/details page
@@ -458,24 +607,50 @@ def mvOverview():
                     continue
 
                 print("getMVZones returned:" , zonesdetaildata)
+
+               
+                #JSON data to use for table and chart.js
                 MVZonesDetails=json.loads(zonesdetaildata)
+                entranceData = json.loads(data)
+                
+                labelList = []
+                graphColors = []
+                for i in range(len(MVZonesDetails)):
+                    label = MVZonesDetails[i].get('label')
+                    labelList.append(label)
+                    randomColor = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+                    graphColors.append(randomColor)
+
+
+                print(labelList)
+
+                entranceCountList = []
+                for i in range(len(entranceData)):
+                    count = entranceData[i].get('entrances')
+                    entranceCountList.append(count)
+
+                print(entranceCountList)
+
+
+                
 
                 # add a chart
                 #first add the name of the chart to the list of charts to be displayed in the page
                 theDeviceCharts.append("chart"+str(theChartNum))
 
                 #now append the top level details of the camera for this chart to theDeviceDetails
-                theDeviceDetails.append([theDevice["serial"],theDevice["name"],[]])
+                theDeviceDetails.append([theDevice["serial"],theDevice["model"],[]])
 
                 #now create the chart object using the serial as the name and the name of the device as the title
-                mv_overview_chart = ColumnChart("chart"+str(theChartNum), options={"title": theDevice["name"],
+                mv_overview_chart = ColumnChart("chart"+str(theChartNum), options={"title": theDevice["model"],
                                                                           "width": 800,
                                                                           "height": 400,
                                                                           "hAxis.title": "Hour",
                                                                           "animation": animation_option})
                 mv_overview_chart.add_column("string", "Zone")
                 mv_overview_chart.add_column("number", "Visitors")
-                print(data)
+                
+               
                 the_rows = []
                 for j in range(len(MVZones)):
                     thisZone=MVZones[j]
@@ -493,18 +668,33 @@ def mvOverview():
                     theDeviceDetails[theChartNum][2].append([thisZoneDetails["zoneId"], thisZoneDetails["label"]])
 
                 mv_overview_chart.add_rows(the_rows)
-                charts.register(mv_overview_chart)
+                #charts.register(mv_overview_chart)
 
                 theChartNum+=1
 
             print("Rendering overview form with:")
             print("allTheDetails=",theDeviceDetails)
+            
+            #Chart.js build
+            chartCount = []
+            for i in range(len(theDeviceDetails)):
+                chartCount.append(i)
 
-            return render_template("mvOverview.html",allTheCharts=theDeviceCharts,allTheDetails=theDeviceDetails)
+
+            return render_template("mvOverview.html",chartCount=chartCount, colors=graphColors, zoneLabel=labelList, entranceCount=entranceCountList, allTheCharts=theDeviceCharts,allTheDetails=theDeviceDetails)
 
         else:
             return render_template('error.html'), 404
 
+#API Configuration GUI
+@app.route('/setup',methods=['GET','POST'])
+def apiSetup():
+  
+    return render_template("setup.html")
+
+
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    
+    app.jinja_env.cache = {}
+    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)

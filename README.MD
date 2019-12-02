@@ -19,7 +19,11 @@ There are 3 main functionalities in this repository:
 
 ## Configuration
 
-**Config.py** contains all of the global variables and configuration needed throughout the code, including keys and thresholds.
+**Configuration UI** (http://0.0.0.0:5001/setup) provides user option to input Meraki API Key, Network ID, Camera Serial #, Validator, and AP MAC Address. These values are stored in the application's SQLite database that is hosted locally on the user's endpoint. Other configuration parameters can be configured from the config.py file. If there is an error in the API configuration, the user will receive a prompt to check configuration and input correct values. The image below illustrates how this interaction works: 
+
+![Setup UI Sequence Diagram](https://raw.githubusercontent.com/gve-sw/MerakiMVMandMXAnalyticsDemo/feature/update-readme/Slide1.png)
+
+**Config.py** contains all of the other global variables and configuration needed throughout the code, including keys and thresholds. 
 
 ### MV Sense Camera Setup  
 Leverage Meraki new camera API and MQTT capability to create a notification service. When the camera detects a person consistently appears in a particular zone the service will send a Webex team message to a Webex team room with a video link which will directly go to the video footage when that even occurred. This is useful for alerting unexpected person movement in off-hours. Here is more information on MV sense data: https://developer.cisco.com/meraki/build/mv-sense-documentation/
@@ -34,9 +38,9 @@ Leverage Meraki new camera API and MQTT capability to create a notification serv
 2. MQTT_SERVER is the MQTT broker ip or domain ("test.mosquitto.org" for example)
 3. MQTT_PORT is the MQTT broker port being utilized (usually 1883)
 4. MQTT_TOPIC is the top of the Meraki camera Matt, boy default it is “/merakimv/#”
-5. MERAKI_API_KEY is the Meraki Api key for organization
-6. NETWORK_ID is Camera's network ID, will use this get video link with camera api
-7. COLLECT_CAMERAS_SERIAL_NUMBERS is the array of cameras serial numbers, for all of there cameras use *
+5. MERAKI_API_KEY is the Meraki Api key for organization **> user updates this in Configuration UI**
+6. NETWORK_ID is Camera's network ID, will use this get video link with camera api **> user updates this in Configuration UI**
+7. COLLECT_CAMERAS_SERIAL_NUMBERS is the array of cameras serial numbers, for all of there cameras use * **> user updates this in Configuration UI**
 8. COLLECT_ZONE_IDS is Array of camera zone id, all is *
 9. MOTION_ALERT_PEOPLE_COUNT_THRESHOLD is the minimum number of people detected in camera to trigger the start of an activity
 10. MOTION_ALERT_ITERATE_COUNT is the minimum number of mqtt messages counted to indicate that an activity has successfully occurred
@@ -67,7 +71,7 @@ https://documentation.meraki.com/MR/Monitoring_and_Reporting/CMX_Analytics#CMX_L
 2. Validator is the validator key that can be found in the Meraki dashboard by navigating to **Network-wide > General
 3. Scroll down to “Location and Analytics” to copy and paste this validator key into code (ensure analytics and scanning API are enabled)
 4. _RSSI_THRESHOLD is the minimum rssi value needed for a device to be written into database (rssi is the signal strength of the device seen by the access point
-5. _APMACADDR is the MAC address of the desired access point to gather data from
+5. _APMACADDR is the MAC address of the desired access point to gather data from user updates in Configuration UI
 
 —— Access Point setting ——
 1. Download ngrok which is used to create public URLs for programs (more information here: https://ngrok.com)
@@ -96,3 +100,4 @@ https://documentation.meraki.com/MR/Monitoring_and_Reporting/CMX_Analytics#CMX_L
 6. In a new terminal window, enter ‘python3.7 cmxreceiver.py’ (note at this point the validate button in the Meraki dashboard should be working, data will stream every minute or so)
 7. In a new terminal window, enter ‘python3.7 mvSense.py’ (connection should be made with MQTT server and data should start streaming)
 8. To run the flask application, enter ‘python flaskApp.py’ in another terminal window and navigate your browser to the given url address (http://0.0.0.0:5001)
+9. App will query setup table in DB. If values throw an API call error when using app, user will be prompted to check configuration and input correct values. 

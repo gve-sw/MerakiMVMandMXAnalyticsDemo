@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Current Configuration{% endblock %}
+
+{% block pageTitle %}Setup{% endblock %}
+
+{% block section1title %}
+
+<div class="row">
+    <div class="col-lg-6 col-xl-4">
+        <div class="alert alert--info">
+                <div class="alert__icon icon-info-outline"></div>
+                <div class="alert__message">Current Configuration</div>
+            </div>
+        </div>
+    </div>
+    
+    
+
+
+{% endblock %}
+
+
+{% block section1content %}
+
+<div class="responsive-table">
+        <table class="table table--bordered">
+            <thead>
+                <tr>
+
+                    <th>Meraki API Key</th>
+                    <th>Network ID</th>
+                    <th>Camera Serial #</th>
+                    <th>Validator</th>
+                    <th>AP MAC Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ meraki_api_key }}</td>
+                    <td>{{ network_id }}</td>
+                    <td>{{ camera_serial_number }}</td>
+                    <td>{{ validator }}</td>
+                    <td>{{ ap_mac_address }}</td>
+                </tr>
+        
+            </tbody>
+        </table>
+    </div>
+
+
+ 
+
+ 
+
+
+<div class="row">
+        <div class="col-6 col-lg-2 half-margin-top half-margin-bottom">
+            <button onclick="location.href='/mvOverview'" class="btn btn--primary"><b>Return Home</b></button>
+            </div>
+</div>
+
+{% endblock %}
