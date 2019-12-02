@@ -1,8 +1,5 @@
 # this config file contains multiple variables utilized throughout the functionality of this code
 
-MERAKI_API_KEY = ""
-NETWORK_ID = ""
-
 # ------------Variables utilized in mvSense.py-----------------------------------
 MQTT_SERVER = "test.mosquitto.org"
 #MQTT_SERVER = "MQTT_IP_DOMAIN"
@@ -33,10 +30,6 @@ TIMEOUT = 20
 validator = ""
 # rssi value needed to be registered as a "visitor" to be stored in database in cmxreceiver
 _RSSI_THRESHOLD = 15
-
-# Mac address of desired access point
-_APMACADDR="0c:8d:db:6d:e0:6b"
-
 
 # --------Variables utilized in compute.py----------------------
 
