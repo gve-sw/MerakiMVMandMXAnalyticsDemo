@@ -1,11 +1,15 @@
 # Meraki MV and MX Analytics Demo
 
-This demo utilizes Meraki MV Sense camera data in conjunction with Meraki CMX access point data to output human consumable information and correlations regarding activities such as number of visits, busiest times in a day, number of people etc.  Streaming data from MV sense and CMX are stored in local files and are then utilized for further analysis and formatting.  A web GUI is used to display and interact with the data with options for csv download.
+This demo utilizes Meraki MV Sense camera data in conjunction with Meraki CMX access point data to output human consumable information and correlations regarding activities such as number of visits, busiest times in a day, number of people etc.  Streaming data from MV sense and CMX are stored in local files and are then utilized for further analysis and formatting.  A web GUI is used to display and interact with the data.
 
 It also implements a simplified dashboard that focuses on showing the number of visitors on each camera in a Network divided by zones and
 zooming into a particular zone to see hourly details and relevant camera snapshots.
-  
-  
+
+![MV Overview](Images/MVOverviewCameras.png)
+
+**More screenshots here:**  
+[MerakiMVMandAnalytics Screenshots](MerakiMVMandAnalyticsScreenshots.MD)
+
 This application has relevant use cases for asset utilization tracking, customer activity tracking, and much more.
 
 There are 3 main functionalities in this repository:  
@@ -29,7 +33,7 @@ There are 3 main functionalities in this repository:
 Leverage Meraki new camera API and MQTT capability to create a notification service. When the camera detects a person consistently appears in a particular zone the service will send a Webex team message to a Webex team room with a video link which will directly go to the video footage when that even occurred. This is useful for alerting unexpected person movement in off-hours. Here is more information on MV sense data: https://developer.cisco.com/meraki/build/mv-sense-documentation/
 
 —— MQTT and setting ——
-1. In the Meraki dashboard, go to **Cameras > [Camera Name] > Settings > Sense** page.
+1. In the Meraki dashboard, go to **Cameras > {Camera Name} > Settings > Sense** page.
 2. Click **Add or edit MQTT Brokers > New MQTT Broker** and add you broker information. For testing/trial you can find public broker at [here](https://github.com/mqtt/mqtt.github.io/wiki/public_brokers).
 3. You can install [MQTT.fx](https://mqttfx.jensd.de/) to subscribe to MQTT broker. This is a very useful tool
 
@@ -58,7 +62,7 @@ How it works:
 the event, such as GPS, X Y coordinates and additional client details.
 - Meraki will first send a GET request to this CMX receiver, which expects to receive a "validator" key that matches
 the Meraki network's validator.
-- Meraki will then send a JSON message to this application's POST URL (i.e. http://yourserver/ method=[POST])
+- Meraki will then send a JSON message to this application's POST URL
 - The JSON is checked to ensure it matches the expected secret, version and observation device type.
 - The resulting data is sent to the "save_data(data)" function where it can be sent to a database or other service
     - This example will simply print the CMX data to the console.
