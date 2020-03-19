@@ -1,13 +1,23 @@
 # Meraki MV and MX Analytics Demo
 
-This demo utilizes Meraki MV Sense camera data in conjunction with Meraki CMX access point data to output human consumable information and correlations regarding activities such as number of visits, busiest times in a day, number of people etc.  Streaming data from MV sense and CMX are stored in local files and are then utilized for further analysis and formatting.  A web GUI is used to display and interact with the data.
+This demo utilizes Meraki MV Sense camera data in conjunction with Meraki CMX access point data to output human consumable information and correlations regarding activities such as number of visits, busiest times in a day, number of people etc.  Streaming data from MV sense and CMX are stored in local files and are then utilized for further analysis and formatting.  
+To obtain the real-time data from the cameras, the MQTT protocol is used which requires some configuration as shown below. Here is a more [detailed explanation](https://developer.cisco.com/meraki/mv-sense/#!mqtt) of how Meraki uses that protocol to send camera object detections to your application.
+To obtain the location information from mobile devices, the [Location Scanning API](https://developer.cisco.com/meraki/scanning-api/#!introduction/scanning-api) is used.
+
+A web GUI is used to display and interact with the data.
 
 It also implements a simplified dashboard that focuses on showing the number of visitors on each camera in a Network divided by zones and
-zooming into a particular zone to see hourly details and relevant camera snapshots.
+zooming into a particular zone to see hourly details and relevant camera snapshots. The data for the simplified dashboards in the "MV Overview" tab  
+comes from the Meraki Dashboard REST API, specifically the MV Sense [camera analytics overview](https://developer.cisco.com/meraki/api/#/rest/api-endpoints/mv-sense/get-device-camera-analytics-overview)  
+and the [Camera Analytics Zone History](https://developer.cisco.com/meraki/api/#/rest/api-endpoints/mv-sense/get-device-camera-analytics-zone-history) REST API calls.
 
 ![MV Overview](Images/MVOverviewCameras.png)
 
-**More screenshots here:**  
+If you are only interested in this simplified dashboard that consumes historical people count data from the Meraki Cloud, you do not need to configure the MQTT broker to get live MV Sense camera data nor
+the CMX configuration and CMX receiver info as seen below; you just need to configure the Network ID and API key in the setup pages.
+You also con skip running the **cmxreceiver.py** and **mvSense.py** scripts below since those capture date for the rest of the pages in the demo.
+
+**Screenshots for the rest of the pages here:**
 [MerakiMVMandAnalytics Screenshots](MerakiMVMandAnalyticsScreenshots.MD)
 
 This application has relevant use cases for asset utilization tracking, customer activity tracking, and much more.
